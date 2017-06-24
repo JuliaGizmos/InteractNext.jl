@@ -16,7 +16,7 @@ end
 function map_block(block, symbols)
     lambda = Expr(:(->), Expr(:tuple, symbols...),
                   block)
-    :(on($lambda, $(map(s->:(obs($s)), symbols)...)))
+    :(map($lambda, $(map(s->:(obs($s)), symbols)...)))
 end
 
 function symbols(bindings)
