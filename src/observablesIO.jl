@@ -9,21 +9,32 @@ end
 
 richest_html(val) = reprmime(richest_mime(val), val)
 
-# these are used to update output areas wherever the observable is displayed
+# May have some use for this later
 output_observables = Dict{Observable, Vector{Observable}}()
 
 function Base.show(stream::IO, ::MIME{Symbol("text/html")}, obs::Observable)
+    # setup output area which updates when `obs`'s value changes
     w = Widget()
-    htmlout = richest_html(obs[])
-    # setup output area updating when the shown observable's value changes
-    output_obs = Observable(w, "obs-output", htmlout)
-    output_observables[obs] = [output_obs]
-    onjs(output_obs, @js (val) -> begin
-        this.dom.querySelector("#out").innerHTML = val
-    end)
-    # update the new output_obs whenever obs updates
+
+    # will store the string of html which the `obs` value is converted to
+    output_obs = Observable(w, "obs-output", "")
+
+    # store the output observations TODO: needed?
+    outvec = get!(output_observables, obs, Observable[])
+    push!(outvec, output_obs)
+
+    # ensure output_obs updates with the new html representation of obs when obs updates
     map!(richest_html, output_obs, obs)
 
-    # write the html to the stream
-    write(stream, stringmime("text/html", w(dom"div#out"(htmlout))))
+    # ensure the output area updates when output_obs updates
+    onjs(output_obs, @js (updated_htmlstr) -> begin
+        @var el = this.dom.querySelector("#out")
+        WebIO.setInnerHtml(el, updated_htmlstr)
+    end)
+
+    # create the output element
+    Base.show(stream, MIME("text/html"), w(dom"div#out"()))
+
+    # set initial html string value (triggers the map! and onjs above)
+    output_obs[] = richest_html(obs[])
 end

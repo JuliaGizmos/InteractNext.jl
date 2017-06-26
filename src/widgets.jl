@@ -36,7 +36,6 @@ function vue(template, data=[]; kwargs...)
     options = merge(Dict("el"=>"#$id", "data"=>init), Dict(kwargs))
 
     ondependencies(wrapper, @js function (Vue, vueSlider)
-            console.log(vueSlider)
             Vue.component("vue-slider", vueSlider)
             this.vue = @new Vue($options)
             $(values(watches)...)
