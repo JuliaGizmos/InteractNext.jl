@@ -1,4 +1,4 @@
-export obs, slider
+export obs, slider, button
 
 function vue(template, data=[], run_ondeps=(@js ""); kwargs...)
     id = WebIO.newid("vue-instance")
@@ -51,7 +51,6 @@ end
 
 function slider(range, obs::Observable=Observable(medianelement(range));
         label="", kwargs...)
-    on(identity, obs) # ensures updates propagate back to julia
     push!(kwargs, (:min, first(range)), (:max, last(range)), (:interval, step(range)))
     push!(kwargs, (:ref, "slider"), ("v-model", "value"), (:style, "margin-top:30px"))
     kwdict = Dict(kwargs)
@@ -64,12 +63,24 @@ end
 medianidx(r) = (1+length(r))>>1
 medianelement(r::Range) = r[medianidx(r)]
 
+"""
+button(label="", clicks::Observable = Observable(0))
+
+e.g. button(label="clicked {{clicks}} times")
+"""
+function button(label="", clicks::Observable = Observable(0))
+    kwdict = Dict("v-on:click"=>"clicks += 1")
+    template = Node(Symbol("md-button"), attributes=kwdict)(label)
+    button = InteractNext.make_widget(template, clicks; obskey=:clicks)
+end
+
 # store mapping from widgets to observables
 widgobs = Dict{Any, Observable}()
 # users access a widget's Observable via this function
 obs(widget) = widgobs[widget]
 
 function make_widget(template, obs::Observable; obskey=:value)
+    on(identity, obs) # ensures updates propagate back to julia
     widget = vue(template, [obskey=>obs])
     widgobs[widget] = obs
     widget
