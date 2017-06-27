@@ -1,12 +1,14 @@
 export obs, slider
 
-function vue(template, data=[]; kwargs...)
+function vue(template, data=[], run_ondeps=(@js ""); kwargs...)
     id = WebIO.newid("vue-instance")
 
     wrapper = Widget(id,
+        # The urls for these deps are defined in setup.jl
         dependencies=[
-            Dict("url"=>"https://unpkg.com/vue", "type"=>"js"),
-            Dict("url"=>"https://gitcdn.xyz/repo/NightCatSama/vue-slider-component/master/dist/index.js", "type"=>"js"),
+            Dict("url"=>"vue", "type"=>"js"),
+            Dict("url"=>"vue-slider", "type"=>"js"),
+            Dict("url"=>"vue-material", "type"=>"js"),
         ]
     )
 
@@ -19,14 +21,15 @@ function vue(template, data=[]; kwargs...)
             setobservable!(wrapper, skey, v)
 
             # forward updates from Julia to the Vue property
-            onjs(v, @js (val) -> (debugger; this.vue[$skey] = val))
+            # onjs(v, @js (val) -> (debugger; this.vue[$skey] = val))
+            onjs(v, @js (val) -> (this.vue[$skey] = val))
 
             # forward vue updates back to WebIO observable
             # which might send it to Julia
             watches[skey] = @js this.vue["\$watch"]($skey, function (newval, oldval)
-                                            debugger
-                                           $v[] = newval
-                                       end)
+                    # debugger
+                    $v[] = newval
+                end)
             init[skey] = v[]
         else
             init[skey] = v
@@ -35,26 +38,24 @@ function vue(template, data=[]; kwargs...)
 
     options = merge(Dict("el"=>"#$id", "data"=>init), Dict(kwargs))
 
-    ondependencies(wrapper, @js function (Vue, vueSlider)
-            Vue.component("vue-slider", vueSlider)
-            this.vue = @new Vue($options)
-            $(values(watches)...)
-          end)
+    ondependencies(wrapper, @js function (Vue, VueSlider, VueMaterial)
+        Vue.component("vue-slider", VueSlider)
+        Vue.use(VueMaterial)
+        this.vue = @new Vue($options)
+        $(values(watches)...)
+        $run_ondeps
+    end)
 
     wrapper(dom"div"(template, id=id)) # FIXME why can't I set the ID on the class?
 end
 
-widgobs = Dict{Any, Observable}()
-obs(widget) = widgobs[widget]
-
 function slider(range, obs::Observable=Observable(medianelement(range));
         label="", kwargs...)
-    on(identity, obs)
+    on(identity, obs) # ensures updates propagate back to julia
     push!(kwargs, (:min, first(range)), (:max, last(range)), (:interval, step(range)))
     push!(kwargs, (:ref, "slider"), ("v-model", "value"), (:style, "margin-top:30px"))
     kwdict = Dict(kwargs)
     haskey(kwdict, :value) && (obs[] = kwdict[:value])
-    # template = @dom_str(string(label,"""vue-slider\[ref="slider",v-model=value,""",kwargstr(; kwargs...),"style=margin-top:30px\]"))()
     template = Node(:div)(label, Node(Symbol("vue-slider"), attributes=kwdict))
     make_widget(template, obs)
 end
@@ -62,6 +63,11 @@ end
 # differs from median(r) in that it always returns an element of the range
 medianidx(r) = (1+length(r))>>1
 medianelement(r::Range) = r[medianidx(r)]
+
+# store mapping from widgets to observables
+widgobs = Dict{Any, Observable}()
+# users access a widget's Observable via this function
+obs(widget) = widgobs[widget]
 
 function make_widget(template, obs::Observable; obskey=:value)
     widget = vue(template, [obskey=>obs])
