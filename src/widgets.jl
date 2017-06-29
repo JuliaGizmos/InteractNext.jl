@@ -6,6 +6,7 @@ function vue(template, data=[], run_ondeps=(@js ""); kwargs...)
     wrapper = Widget(id,
         # The urls for these deps are defined in setup.jl
         dependencies=[
+            Dict("url"=>"https://gitcdn.xyz/repo/vuematerial/vue-material/master/dist/vue-material.css", "type"=>"css"), # only gets loaded once - not for all widgets - see https://github.com/JuliaGizmos/WebIO.jl/blob/master/assets/basics/node.js#L206
             Dict("url"=>"vue", "type"=>"js"),
             Dict("url"=>"vue-slider", "type"=>"js"),
             Dict("url"=>"vue-material", "type"=>"js"),
