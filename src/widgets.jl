@@ -70,7 +70,7 @@ button(label="", clicks::Observable = Observable(0))
 e.g. button(label="clicked {{clicks}} times")
 """
 function button(label="", clicks::Observable = Observable(0))
-    kwdict = Dict("v-on:click"=>"clicks += 1")
+    kwdict = Dict("v-on:click"=>"clicks += 1","class"=>"md-raised md-primary")
     template = Node(Symbol("md-button"), attributes=kwdict)(label)
     button = InteractNext.make_widget(template, clicks; obskey=:clicks)
 end
