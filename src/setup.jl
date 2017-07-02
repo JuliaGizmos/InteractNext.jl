@@ -1,4 +1,5 @@
 systemjs_config = Dict(
+    # TODO change urls to be specific versions, not "master" etc
     "paths"=>Dict(
         # "vue"=>"https://unpkg.com/vue",
         "vue"=>"https://gitcdn.xyz/repo/vuejs/vue/master/dist/vue.js",
@@ -11,10 +12,4 @@ systemjs_config = Dict(
 
 function setup()
     WebIO.setup()
-    # TODO change urls to be specific versions, not "master" etc
-    display(
-        dom"script"(WebIO.jsstring(@js begin
-            SystemJS.config($systemjs_config)
-        end))
-    )
 end

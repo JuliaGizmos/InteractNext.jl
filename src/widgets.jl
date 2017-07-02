@@ -1,12 +1,12 @@
 export obs, slider, button
 
-function vue(template, data=[], run_ondeps=(@js ""); kwargs...)
+function vue(template, data=[], run_postdeps=(@js function() end); kwargs...)
     id = WebIO.newid("vue-instance")
 
     wrapper = Widget(id,
         # The urls for these deps are defined in setup.jl
         dependencies=[
-            Dict("url"=>"https://gitcdn.xyz/repo/vuematerial/vue-material/master/dist/vue-material.css", "type"=>"css"), # only gets loaded once - not for all widgets - see https://github.com/JuliaGizmos/WebIO.jl/blob/master/assets/basics/node.js#L206
+            Dict("url"=>"https://gitcdn.xyz/repo/vuematerial/vue-material/master/dist/vue-material.css", "type"=>"css"), # css deps only get loaded once - not for all widgets - see https://github.com/JuliaGizmos/WebIO.jl/blob/master/assets/basics/node.js#L206
             Dict("url"=>"vue", "type"=>"js"),
             Dict("url"=>"vue-slider", "type"=>"js"),
             Dict("url"=>"vue-material", "type"=>"js"),
@@ -37,6 +37,11 @@ function vue(template, data=[], run_ondeps=(@js ""); kwargs...)
         end
     end
 
+    onjs(wrapper, "preDependencies", @js function (ctx)
+        console.log("future saila")
+        SystemJS.config($systemjs_config)
+    end)
+
     options = merge(Dict("el"=>"#$id", "data"=>init), Dict(kwargs))
 
     ondependencies(wrapper, @js function (Vue, VueSlider, VueMaterial)
@@ -44,19 +49,20 @@ function vue(template, data=[], run_ondeps=(@js ""); kwargs...)
         Vue.use(VueMaterial)
         this.vue = @new Vue($options)
         $(values(watches)...)
-        $run_ondeps
+        ($run_postdeps)()
     end)
 
-    wrapper(dom"div"(template, id=id)) # FIXME why can't I set the ID on the class?
+    wrapper(dom"div"(template; id=id))
 end
 
 function slider(range, obs::Observable=Observable(medianelement(range));
         label="", kwargs...)
-    push!(kwargs, (:min, first(range)), (:max, last(range)), (:interval, step(range)))
+    # for non string values we must use properties, not attributes
+    props = Dict(zip((:min, :max, :interval), (first(range), last(range), step(range))))
     push!(kwargs, (:ref, "slider"), ("v-model", "value"), (:style, "margin-top:30px"))
-    kwdict = Dict(kwargs)
-    haskey(kwdict, :value) && (obs[] = kwdict[:value])
-    template = Node(:div)(label, Node(Symbol("vue-slider"), attributes=kwdict))
+    attrdict = Dict(kwargs)
+    haskey(attrdict, :value) && (obs[] = attrdict[:value])
+    template = Node(:div)(label, Node(Symbol("vue-slider"); attributes=attrdict, props...))
     make_widget(template, obs)
 end
 
@@ -70,8 +76,8 @@ button(label="", clicks::Observable = Observable(0))
 e.g. button(label="clicked {{clicks}} times")
 """
 function button(label="", clicks::Observable = Observable(0))
-    kwdict = Dict("v-on:click"=>"clicks += 1","class"=>"md-raised md-primary")
-    template = Node(Symbol("md-button"), attributes=kwdict)(label)
+    attrdict = Dict("v-on:click"=>"clicks += 1","class"=>"md-raised md-primary")
+    template = Node(Symbol("md-button"), attributes=attrdict)(label)
     button = InteractNext.make_widget(template, clicks; obskey=:clicks)
 end
 
