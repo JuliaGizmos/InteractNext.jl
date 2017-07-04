@@ -38,7 +38,6 @@ function vue(template, data=[], run_postdeps=(@js function() end); kwargs...)
     end
 
     onjs(wrapper, "preDependencies", @js function (ctx)
-        console.log("future saila")
         SystemJS.config($systemjs_config)
     end)
 
@@ -58,11 +57,11 @@ end
 function slider(range, obs::Observable=Observable(medianelement(range));
         label="", kwargs...)
     # for non string values we must use properties, not attributes
-    props = Dict(zip((:min, :max, :interval), (first(range), last(range), step(range))))
+    push!(kwargs, (:min, first(range)), (:max, last(range)), (:interval, step(range)))
     push!(kwargs, (:ref, "slider"), ("v-model", "value"), (:style, "margin-top:30px"))
     attrdict = Dict(kwargs)
-    haskey(attrdict, :value) && (obs[] = attrdict[:value])
-    template = Node(:div)(label, Node(Symbol("vue-slider"); attributes=attrdict, props...))
+    haskey(attrdict, :value) && (obs[] = attrdict[:value]) # set the obs to the initial value if provided
+    template = Node(:div)(label, Node(Symbol("vue-slider"); attributes=attrdict))
     make_widget(template, obs)
 end
 

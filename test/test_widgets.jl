@@ -60,7 +60,7 @@ w = Window()
 using InteractNext
 s1 = slider(1:20)
 sobs = obs(s1)
-body!(w, dom"div"(s1, sobs))
+body!(w, dom"div"(s1, WebIO.render(sobs)))
 #---
 using Blink, InteractNext
 w = Window()
