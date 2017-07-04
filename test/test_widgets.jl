@@ -57,10 +57,23 @@ code = """
 #---
 using Blink
 w = Window()
+# w = Juno.Atom.blinkplot()
 using InteractNext
 s1 = slider(1:20)
 sobs = obs(s1)
 body!(w, dom"div"(s1, WebIO.render(sobs)))
+#---
+sobs[] = 9
+#---
+using InteractNext
+@manipulate for i in 1:20
+    i
+end
+#---
+using InteractNext, Plots
+@manipulate for k in 1:20
+    plot(x->sin(k*x), 0:0.1:30)
+end
 #---
 using Blink, InteractNext
 w = Window()
