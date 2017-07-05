@@ -1,4 +1,9 @@
-export @manipulate
+export @manipulate, Manipulate
+
+struct Manipulate
+    widgets::Vector # of WebIO Widgets I guess
+    outobs::Observable
+end
 
 function make_widget(binding)
     if binding.head != :(=)
@@ -16,7 +21,7 @@ end
 function map_block(block, symbols)
     lambda = Expr(:(->), Expr(:tuple, symbols...),
                   block)
-    :(WebIO.render(map($lambda, $(map(s->:(obs($s)), symbols)...))))
+    :(map($lambda, $(map(s->:(obs($s)), symbols)...)))
 end
 
 function symbols(bindings)
@@ -35,10 +40,16 @@ macro manipulate(expr)
         bindings = [expr.args[1]]
     end
     syms = symbols(bindings)
-    Expr(:let, Expr(:block,
-                    display_widgets(syms)...,
-                    esc(map_block(block, syms))),
-         map(make_widget, bindings)...)
+
+    widgets = map(make_widget, bindings)
+    quote
+        Manipulate([$(widgets...)], $(esc(map_block(block, syms))))
+    end
 end
+
+function WebIO.render(m::InteractNext.Manipulate)
+    dom"div"(m.widgets..., WebIO.render(m.outobs))
+end
+
 
 widget(x::Range, label="") = slider(x; label=label)
