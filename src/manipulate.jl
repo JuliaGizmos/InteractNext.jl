@@ -51,5 +51,8 @@ function WebIO.render(m::InteractNext.Manipulate)
     dom"div"(m.widgets..., WebIO.render(m.outobs))
 end
 
+function WebIO.render_inline(m::InteractNext.Manipulate)
+    "Manipulate with $(length(m.widgets)) widgets and output of type $(typeof(m.outobs[]))" #TODO change to eltype(m.outobs)
+end
 
 widget(x::Range, label="") = slider(x; label=label)

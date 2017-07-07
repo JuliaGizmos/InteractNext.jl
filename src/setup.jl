@@ -12,4 +12,5 @@ systemjs_config = Dict(
 
 function setup()
     WebIO.setup()
+    Base.invokelatest(WebIO.register_renderable, Manipulate)
 end
