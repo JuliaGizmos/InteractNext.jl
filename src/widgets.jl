@@ -5,12 +5,7 @@ function vue(template, data=[], run_postdeps=(@js function() end); kwargs...)
 
     wrapper = Widget(id,
         # The urls for these deps are defined in setup.jl
-        dependencies=[
-            Dict("url"=>"https://gitcdn.xyz/repo/vuematerial/vue-material/master/dist/vue-material.css", "type"=>"css"), # css deps only get loaded once - not for all widgets - see https://github.com/JuliaGizmos/WebIO.jl/blob/master/assets/basics/node.js#L206
-            Dict("url"=>"vue", "type"=>"js"),
-            Dict("url"=>"vue-slider", "type"=>"js"),
-            Dict("url"=>"vue-material", "type"=>"js"),
-        ]
+        dependencies=widget_deps
     )
 
     init = Dict()
@@ -43,11 +38,14 @@ function vue(template, data=[], run_postdeps=(@js function() end); kwargs...)
 
     options = merge(Dict("el"=>"#$id", "data"=>init), Dict(kwargs))
 
-    ondependencies(wrapper, @js function (Vue, VueSlider, VueMaterial)
+    ondependencies(wrapper, @js function (Vue, VueSlider, VueMaterial, Plotly)
         Vue.component("vue-slider", VueSlider)
         Vue.use(VueMaterial)
         this.vue = @new Vue($options)
         $(values(watches)...)
+        if Plotly
+            window.Plotly = Plotly
+        end
         ($run_postdeps)()
     end)
 
