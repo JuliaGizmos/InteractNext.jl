@@ -16,8 +16,7 @@ const widget_deps = [
 ]
 
 @require PlotlyJS begin
-    Base.show(io::IO, ::MIME"text/html", sp::PlotlyJS.SyncPlot) =
-        print(io, PlotlyJS.stringmime(MIME"text/html"(), sp.plot, :embed))
+    PlotlyJS.js_default[] = :embed
     println("InteractNext: PlotlyJS enabled")
 end
 
