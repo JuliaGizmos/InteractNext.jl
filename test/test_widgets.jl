@@ -66,22 +66,58 @@ body!(w, dom"div"(s1, WebIO.render(sobs)))
 sobs[] = 9
 #---
 using InteractNext
-@manipulate for i in 1:20
+#---
+m1 = @manipulate for i in 1:20
     i
 end
 #---
+m1
+#---
+stringmime(MIME"text/html"(), (Blink.@js w Plotly)) |> println
+#---
+plot(x->sin(2*x), 0:0.1:30)
+#---
+using WebIO
+WebIO.setup()
+#---
+n = dom"div"("heyyyy")
+#---
 using InteractNext, Plots
+#---
+plot(1:10) # World age method error until this is merged: https://github.com/JuliaPlots/Plots.jl/pull/916
+#---
 @manipulate for k in 1:20
-    plot(x->sin(k*x), 0:0.1:30)
+    plot(x->sin(0.3k*x), 0:0.1:30)
 end
 #---
-using Blink, InteractNext
-w = Window()
-body!(w, dom"div"()) # required to load webio_bundle
-ob = Observable(10)
-body!(w, ob)
+m1 = @manipulate for k in 1:20
+    plot(x->sin(0.3k*x), 0:0.1:30)
+end
 #---
-ob[] = 20
+WebIO.render_inline(m1) |> println;
+#---
+using Blink
+using InteractNext, Plots
+plot(1:10)
+mp = @manipulate for k in 1:20
+    plot(x->sin(k*x), 0:0.1:30)
+end
+w = Window()
+body!(w, mp)
+ 
+#---
+using Mux
+using InteractNext, Plots
+
+plot(1:10)
+
+function myapp(req)
+    @manipulate for k in 1:20
+        plot(x->sin(k*x), 0:0.1:30)
+    end
+end
+
+webio_serve(page("/", req -> myapp(req)))
 #---
 using Blink, InteractNext
 w = Window()

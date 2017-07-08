@@ -7,7 +7,7 @@ function richest_mime(val)
     error("value not writable for any mimetypes")
 end
 
-richest_html(val) = reprmime(richest_mime(val), val)
+richest_html(val) = stringmime(richest_mime(val), val) |> WebIO.encode_scripts
 
 """
 toNode(obs::Observable)
@@ -20,14 +20,13 @@ function WebIO.render(obs::Observable)
     w = Widget()
 
     # get the richest representation of obs's current value (as a string)
-    # html_contents_str = richest_html(obs[])
+    html_contents_str = richest_html(obs[])
 
     # Avoid nested <script> issues by initialising as an empty node and updating later
-    node = w(dom"div#out"())
-    # node = w(dom"div#out"(; attributes=Dict(:setInnerHtml=>html_contents_str)))
+    node = w(dom"div#out"(; setInnerHtml=html_contents_str))
 
     # will store the string of html which the `obs` value is converted to
-    output_obs = Observable(w, "obs-output", "")
+    output_obs = Observable(w, "obs-output", html_contents_str)
 
     # ensure output_obs updates with the new html representation of obs when obs updates
     map!(richest_html, output_obs, obs)
@@ -35,14 +34,9 @@ function WebIO.render(obs::Observable)
     # ensure the output area updates when output_obs updates (after obs updates)
     output_updater = @js (updated_htmlstr) -> begin
         @var el = this.dom.querySelector("#out")
-        WebIO.attrUtils.setInnerHtml(el, updated_htmlstr)
+        WebIO.propUtils.setInnerHtml(el, updated_htmlstr)
     end
     onjs(output_obs, output_updater)
-
-    # ensure the output area updates on initial load
-    on(w, "widget_created") do args...
-        output_obs[]=richest_html(obs[])
-    end
 
     # return the wrapped node
     node
