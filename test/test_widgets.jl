@@ -104,7 +104,7 @@ mp = @manipulate for k in 1:20
 end
 w = Window()
 body!(w, mp)
- 
+
 #---
 using Mux
 using InteractNext, Plots
@@ -118,6 +118,7 @@ function myapp(req)
 end
 
 webio_serve(page("/", req -> myapp(req)))
+
 #---
 using Blink, InteractNext
 w = Window()

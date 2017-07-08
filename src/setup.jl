@@ -1,5 +1,6 @@
 using Requires
 
+# TODO change urls to be specific versions, not "master" etc
 const jspaths = Dict(
     # "vue"=>"https://unpkg.com/vue",
     "vue"=>"https://gitcdn.xyz/repo/vuejs/vue/master/dist/vue.min.js",
@@ -21,7 +22,6 @@ const widget_deps = [
 end
 
 systemjs_config = Dict(
-    # TODO change urls to be specific versions, not "master" etc
     "paths"=>jspaths
 )
 
