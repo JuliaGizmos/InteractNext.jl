@@ -38,14 +38,11 @@ function vue(template, data=[], run_postdeps=(@js function() end); kwargs...)
 
     options = merge(Dict("el"=>"#$id", "data"=>init), Dict(kwargs))
 
-    ondependencies(wrapper, @js function (Vue, VueSlider, VueMaterial, Plotly)
+    ondependencies(wrapper, @js function (Vue, VueSlider, VueMaterial)
         Vue.component("vue-slider", VueSlider)
         Vue.use(VueMaterial)
         this.vue = @new Vue($options)
         $(values(watches)...)
-        if Plotly
-            window.Plotly = Plotly
-        end
         ($run_postdeps)()
     end)
 

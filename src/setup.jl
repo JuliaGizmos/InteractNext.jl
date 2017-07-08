@@ -14,10 +14,10 @@ const widget_deps = [
     Dict("url"=>"vue-material", "type"=>"js")
 ]
 
-#TODO be more subtle - only load if PlotlyJS is in the html string or something
 @require PlotlyJS begin
-    jspaths["plotlyjs"] = PlotlyJS._js_cdn_path
-    push!(widget_deps, Dict("url"=>"plotlyjs", "type"=>"js"))
+    Base.show(io::IO, ::MIME"text/html", sp::PlotlyJS.SyncPlot) =
+        print(io, PlotlyJS.stringmime(MIME"text/html"(), sp.plot, :embed))
+    println("InteractNext: PlotlyJS enabled")
 end
 
 systemjs_config = Dict(
