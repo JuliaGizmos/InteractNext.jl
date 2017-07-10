@@ -78,13 +78,12 @@ stringmime(MIME"text/html"(), (Blink.@js w Plotly)) |> println
 plot(x->sin(2*x), 0:0.1:30)
 #---
 using WebIO
-WebIO.setup()
 #---
 n = dom"div"("heyyyy")
 #---
 using InteractNext, Plots
 #---
-plot(1:10) # World age method error until this is merged: https://github.com/JuliaPlots/Plots.jl/pull/916
+plot(1:10) # MethodError due to world age until this is merged: https://github.com/JuliaPlots/Plots.jl/pull/916
 #---
 @manipulate for k in 1:20
     plot(x->sin(0.3k*x), 0:0.1:30)
@@ -96,9 +95,11 @@ end
 #---
 WebIO.render_inline(m1) |> println;
 #---
+using InteractNext
 using Blink
-using InteractNext, Plots
-plot(1:10)
+# using InteractNext, Blink
+using Plots
+plot(1:10) # MethodError due to world age until this is merged: https://github.com/JuliaPlots/Plots.jl/pull/916
 mp = @manipulate for k in 1:20
     plot(x->sin(k*x), 0:0.1:30)
 end

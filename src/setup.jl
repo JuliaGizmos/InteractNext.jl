@@ -1,5 +1,3 @@
-using Requires
-
 # TODO change urls to be specific versions, not "master" etc
 const jspaths = Dict(
     # "vue"=>"https://unpkg.com/vue",
@@ -15,16 +13,10 @@ const widget_deps = [
     Dict("url"=>"vue-material", "type"=>"js")
 ]
 
-@require PlotlyJS begin
-    PlotlyJS.js_default[] = :embed
-    println("InteractNext: PlotlyJS enabled")
-end
-
 systemjs_config = Dict(
     "paths"=>jspaths
 )
 
-function setup()
-    WebIO.setup()
+function webio_setup()
     Base.invokelatest(WebIO.register_renderable, Manipulate)
 end
