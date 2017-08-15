@@ -1,4 +1,6 @@
-export obs, slider, button
+export obs, slider, button, togglebuttons
+
+using DataStructures
 
 function vue(template, data=[], run_postdeps=(@js function() end); kwargs...)
     id = WebIO.newid("vue-instance")
@@ -72,17 +74,41 @@ e.g. button(label="clicked {{clicks}} times")
 function button(label="", clicks::Observable = Observable(0))
     attrdict = Dict("v-on:click"=>"clicks += 1","class"=>"md-raised md-primary")
     template = Node(Symbol("md-button"), attributes=attrdict)(label)
-    button = InteractNext.make_widget(template, clicks; obskey=:clicks)
+    button = make_widget(template, clicks; obskey=:clicks)
 end
+
+"""
+togglebuttons(label="", selected::Observable = Observable{Any}())
+
+e.g. togglebuttons(Dict("good"=>1, "better"=>2, "amazing"=>9001))
+"""
+function togglebuttons(labels_values::Associative,
+        selected::Observable = Observable{Any}(first(values(labels_values)));
+        multiselect=false)
+    btns =
+        [Node(Symbol("md-button"),
+            attributes=Dict("value"=>string(value), "id"=>i,
+                            "v-on:click"=>"selected=$value")
+        )(label)
+            for (i,(label, value)) in enumerate(labels_values)]
+    attrdict = Dict{String, Any}()
+    !multiselect && (attrdict["md-single"] = true)
+    template = Node(Symbol("md-button-toggle"); attributes=attrdict)(btns...)
+    toglbtns = InteractNext.make_widget(template, selected; obskey=:selected)
+end
+
+togglebuttons(vals::AbstractArray,
+              selected::Observable = Observable{Any}(first(vals))) =
+    togglebuttons(OrderedDict(zip(string.(vals), vals)), selected)
 
 # store mapping from widgets to observables
 widgobs = Dict{Any, Observable}()
 # users access a widget's Observable via this function
 obs(widget) = widgobs[widget]
 
-function make_widget(template, obs::Observable; obskey=:value)
+function make_widget(template, obs::Observable; obskey=:value, kwargs...)
     on(identity, obs) # ensures updates propagate back to julia
-    widget = vue(template, [obskey=>obs])
+    widget = vue(template, [obskey=>obs]; kwargs...)
     widgobs[widget] = obs
     widget
 end
