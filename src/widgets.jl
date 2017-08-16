@@ -1,59 +1,37 @@
-export obs, slider, button, togglebuttons, checkbox, make_widget
+export obs, slider, button, togglebuttons, checkbox, textbox, make_widget
 
 using DataStructures
 
-function vue(template, data=[], run_postdeps=(@js function() end); kwargs...)
-    id = WebIO.newid("vue-instance")
+include("widget_utils.jl")
 
-    wrapper = Widget(id,
-        # The urls for these deps are defined in setup.jl
-        dependencies=widget_deps
-    )
+"""
+```
+function slider(range::Range;
+                value=medianelement(range),
+                obs::Observable=Observable(value),
+                label="", kwargs...)
+```
 
-    init = Dict()
-    watches = Dict()
+Creates a slider widget which updates observable `obs` when the slider is changed:
+```
+s = slider(1:10; label="slide on", value="7")
+slider_obs = obs(s)
+```
 
-    for (k, v) in data
-        skey = string(k)
-        if isa(v, Observable)
-            setobservable!(wrapper, skey, v)
+Slider uses the Vue Slider Component from https://github.com/NightCatSama/vue-slider-component
+you can pass any properties you wish to set as keyword arguments, e.g.
+To make a vertical slider you can use
+```
+s = slider(1:10; label="level", value="3", orientation="vertical")
+```
 
-            # forward updates from Julia to the Vue property
-            # onjs(v, @js (val) -> (debugger; this.vue[$skey] = val))
-            onjs(v, @js (val) -> (this.vue[$skey] = val))
-
-            # forward vue updates back to WebIO observable
-            # which might send it to Julia
-            watches[skey] = @js this.vue["\$watch"]($skey, function (newval, oldval)
-                    # debugger
-                    $v[] = newval
-                end)
-            init[skey] = v[]
-        else
-            init[skey] = v
-        end
-    end
-
-    onjs(wrapper, "preDependencies", @js function (ctx)
-        SystemJS.config($systemjs_config)
-    end)
-
-    options = merge(Dict("el"=>"#$id", "data"=>init), Dict(kwargs))
-
-    ondependencies(wrapper, @js function (Vue, VueSlider, VueMaterial)
-        Vue.component("vue-slider", VueSlider)
-        Vue.use(VueMaterial)
-        this.vue = @new Vue($options)
-        $(values(watches)...)
-        ($run_postdeps)()
-    end)
-
-    wrapper(dom"div"(template; id=id))
-end
-
-function slider(range, obs::Observable=Observable(medianelement(range));
-        label="", kwargs...)
-    # for non string values we must use properties, not attributes
+N.b. there is also a shorthand for that particular case - `vslider`
+"""
+function slider{T}(range::Range{T};
+                value=nothing,
+                obs=nothing,
+                label="", kwargs...)
+    obs, value = init_wsigval(obs, value; typ=T, default=medianelement(range))
     push!(kwargs, (:min, first(range)), (:max, last(range)), (:interval, step(range)))
     push!(kwargs, (:ref, "slider"), ("v-model", "value"), (:style, "margin-top:30px"))
     attrdict = Dict(kwargs)
@@ -62,39 +40,48 @@ function slider(range, obs::Observable=Observable(medianelement(range));
     make_widget(template, obs)
 end
 
-# differs from median(r) in that it always returns an element of the range
-medianidx(r) = (1+length(r))>>1
-medianelement(r::Range) = r[medianidx(r)]
+"""
+`vslider(range::Range; kwargs...)`
+
+Same as `slider` just with orientation set to "vertical"
+"""
+vslider(range; kwargs...) = slider(range; orientation="vertical", kwargs...)
 
 """
-button(label="", clicks::Observable = Observable(0))
+button(label=""; obs::Observable = Observable(0))
 
+Note the label supports a special `clicks` variable that can be used like so:
 e.g. button(label="clicked {{clicks}} times")
 """
-function button(label="", clicks::Observable = Observable(0))
+function button(label=""; obs::Observable = Observable(0))
     attrdict = Dict("v-on:click"=>"clicks += 1","class"=>"md-raised md-primary")
     template = Node(Symbol("md-button"), attributes=attrdict)(label)
     button = make_widget(template, clicks; obskey=:clicks)
 end
 
 """
-togglebuttons(label="", selected::Observable = Observable{Any}())
+togglebuttons(labels_values::Associative;
+              value = first(values(labels_values)),
+              obs::Observable = Observable(value))
 
 e.g. togglebuttons(Dict("good"=>1, "better"=>2, "amazing"=>9001))
 """
-function togglebuttons(labels_values::Associative,
-        selected::Observable = Observable{Any}(first(values(labels_values)));
+function togglebuttons(labels_values::Associative;
+        obs::Observable = nothing,
+        value = nothing,
         multiselect=false)
+    default = multiselect ? [] : first(values(labels_values))
+    obs, value = init_wsigval(obs, value; default=default)
     btns =
         [Node(Symbol("md-button"),
-            attributes=Dict("value"=>string(value), "id"=>i,
-                            "v-on:click"=>"selected=$value")
+            attributes=Dict("value"=>string(value), "id"=>i, "v-on:click"=>
+                    multiselect ? "selected.push($value)" : "selected=$value")
         )(label)
             for (i,(label, value)) in enumerate(labels_values)]
     attrdict = Dict{String, Any}()
     !multiselect && (attrdict["md-single"] = true)
     template = Node(Symbol("md-button-toggle"); attributes=attrdict)(btns...)
-    toglbtns = InteractNext.make_widget(template, selected; obskey=:selected)
+    toglbtns = InteractNext.make_widget(template, obs; obskey=:selected)
 end
 
 togglebuttons(vals::AbstractArray,
@@ -103,30 +90,36 @@ togglebuttons(vals::AbstractArray,
 
 """
 ```
-checkbox(label="";
-         checked=false,
-         checked_obs::Observable = Observable(checked))
+checkbox(checked=false;
+         label="",
+         obs::Observable = Observable(checked))
 ```
 
 e.g. `checkbox("be my friend?", checked=false)`
 """
-function checkbox(label=""; checked=false,
-                  checked_obs::Observable = Observable(checked))
+function checkbox(checked=nothing;
+                  label="",
+                  obs=nothing)
+    obs, value = init_wsigval(obs, checked; default=false)
     attrdict = Dict("v-model"=>"checked", "class"=>"md-primary")
     template = Node(Symbol("md-checkbox"), attributes=attrdict)(label)
-    checkbox = make_widget(template, checked_obs; obskey=:checked)
+    checkbox = make_widget(template, obs; obskey=:checked)
 end
 
-# store mapping from widgets to observables
-widgobs = Dict{Any, Observable}()
-# users access a widget's Observable via this function
-obs(widget) = widgobs[widget]
+"""
+```
+textbox(label="";
+        obs::Observable = Observable(""))
+```
 
-function make_widget(template, obs::Observable; obskey=:value, kwargs...)
-    on(identity, obs) # ensures updates propagate back to julia
-    widget = vue(template, [obskey=>obs]; kwargs...)
-    widgobs[widget] = obs
-    widget
+Create a text input area with an optional `label`
+
+e.g. `textbox("enter number:")`
+"""
+function textbox(label=""; obs::Observable = Observable(""), placeholder="")
+    template = dom"md-input-container"(
+                 dom"label"(label),
+                 dom"""md-input[v-model=text, placeholder=$placeholder]"""(),
+               )
+    textbox = make_widget(template, obs; obskey=:text)
 end
-
-kwargstr(; kwargs...) = join(map(kw->string(kw[1],"=",kw[2]),kwargs), ",")
