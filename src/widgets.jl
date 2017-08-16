@@ -3,6 +3,7 @@ export obs, slider, button, togglebuttons, checkbox, textbox, make_widget
 using DataStructures
 
 include("widget_utils.jl")
+include("options_widgets.jl")
 
 """
 ```
@@ -58,37 +59,6 @@ function button(label=""; ob::Observable = Observable(0))
     template = Node(Symbol("md-button"), attributes=attrdict)(label)
     button = make_widget(template, clicks; obskey=:clicks)
 end
-
-"""
-```
-togglebuttons(labels_values::Associative;
-              value = first(values(labels_values)),
-              ob::Observable = Observable(value))
-```
-e.g. `togglebuttons(OrderedDict("good"=>1, "better"=>2, "amazing"=>9001))`
-"""
-function togglebuttons(labels_values::Associative; ob = nothing, value=nothing, multiselect=false)
-    defaultval = multiselect ? [] : first(values(labels_values))
-    ob, value = init_wsigval(ob, value; default=defaultval)
-    btns = map(enumerate(labels_values)) do i_label_value
-        i,(label, value) = i_label_value
-        select_fn = multiselect ? "selected.push($value)" : "selected=$value"
-        dom"""md-button[value=$value, v-on:click=$select_fn, id=$i]"""(label)
-    end
-    attrdict = Dict{String, Any}()
-    !multiselect && (attrdict["md-single"] = true)
-    template = Node(Symbol("md-button-toggle"); attributes=attrdict)(btns...)
-    toglbtns = InteractNext.make_widget(template, ob; obskey=:selected)
-end
-
-"""
-togglebuttons(values::AbstractArray; kwargs...)
-creates togglebuttons with labels `string.(values)`
-
-see togglebuttons(labels_values::Associative; ...) for more details
-"""
-togglebuttons(vals::AbstractArray; kwargs...) =
-    togglebuttons(OrderedDict(zip(string.(vals), vals)); kwargs...)
 
 """
 ```
