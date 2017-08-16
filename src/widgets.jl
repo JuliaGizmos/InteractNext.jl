@@ -1,4 +1,4 @@
-export obs, slider, button, togglebuttons
+export obs, slider, button, togglebuttons, checkbox, make_widget
 
 using DataStructures
 
@@ -100,6 +100,22 @@ end
 togglebuttons(vals::AbstractArray,
               selected::Observable = Observable{Any}(first(vals))) =
     togglebuttons(OrderedDict(zip(string.(vals), vals)), selected)
+
+"""
+```
+checkbox(label="";
+         checked=false,
+         checked_obs::Observable = Observable(checked))
+```
+
+e.g. `checkbox("be my friend?", checked=false)`
+"""
+function checkbox(label=""; checked=false,
+                  checked_obs::Observable = Observable(checked))
+    attrdict = Dict("v-model"=>"checked", "class"=>"md-primary")
+    template = Node(Symbol("md-checkbox"), attributes=attrdict)(label)
+    checkbox = make_widget(template, checked_obs; obskey=:checked)
+end
 
 # store mapping from widgets to observables
 widgobs = Dict{Any, Observable}()
