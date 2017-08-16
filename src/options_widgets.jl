@@ -1,3 +1,5 @@
+export togglebuttons, radiobuttons
+
 """
 ```
 togglebuttons(labels_values::Associative;
@@ -42,3 +44,32 @@ see togglebuttons(labels_values::Associative; ...) for more details
 """
 togglebuttons(vals::AbstractArray; kwargs...) =
     togglebuttons(OrderedDict(zip(string.(vals), vals)); kwargs...)
+
+"""
+```
+radiobuttons(labels_values::Associative;
+              value = first(values(labels_values)),
+              ob::Observable = Observable(value))
+```
+e.g. `radiobuttons(OrderedDict("good"=>1, "better"=>2, "amazing"=>9001))`
+"""
+function radiobuttons(labels_values::Associative;
+                       ob = nothing, value=nothing)
+    defaultval = first(values(labels_values))
+    ob, value = init_wsigval(ob, value; default=defaultval)
+    btns = map(enumerate(labels_values)) do i_label_value
+        i,(label, value) = i_label_value
+        dom"""md-radio[v-model=radio, md-value=$value, class=md-primary]"""(label)
+    end
+    template = dom"div"(btns...)
+    radiobtns = InteractNext.make_widget(template, ob; obskey=:radio)
+end
+
+"""
+radiobuttons(values::AbstractArray; kwargs...)
+creates radiobuttons with labels `string.(values)`
+
+see radiobuttons(labels_values::Associative; ...) for more details
+"""
+radiobuttons(vals::AbstractArray; kwargs...) =
+    radiobuttons(OrderedDict(zip(string.(vals), vals)); kwargs...)
