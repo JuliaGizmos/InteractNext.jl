@@ -1,4 +1,4 @@
-export obs, slider, button, checkbox, textbox, make_widget
+export slider, button, checkbox, textbox
 
 using DataStructures
 

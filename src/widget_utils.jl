@@ -1,3 +1,4 @@
+export obs
 
 function vue(template, data=[], run_postdeps=(@js function() end); kwargs...)
     id = WebIO.newid("vue-instance")
