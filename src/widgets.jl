@@ -1,13 +1,13 @@
 export slider, button, checkbox, textbox
 
-using DataStructures
+using DataStructures, JSON
 
 include("widget_utils.jl")
 include("options_widgets.jl")
 
 """
 ```
-function slider(range::Range;
+function slider(data; # Range or Vector or Associative
                 value=medianelement(range),
                 ob::Observable=Observable(value),
                 label="", kwargs...)
@@ -15,8 +15,23 @@ function slider(range::Range;
 
 Creates a slider widget which updates observable `ob` when the slider is changed:
 ```
-s = slider(1:10; label="slide on", value="7")
-slider_obs = obs(s)
+# slider from Range
+s1 = slider(1:10; label="slide on", value="7")
+slider_obs = obs(s1)
+
+# slider from Array
+lyrics = ["When","I","wake","up","yes","I ","know","I'm","gonna","be"]
+s2 = slider(lyrics; label="Proclaim", value="7")
+slider_obs = obs(s2)
+
+# slider from Associative
+# The slider will have keys(d) for its labels, while obs(s3) will hold d[selected]
+
+using DataStructures
+lyrics = ["When","I","wake","up","yes","I ","know","I'm","gonna","be"]
+d = OrderedDict(zip(lyrics, 1:length(lyrics))
+s3 = slider(d); label="No true Scotsman", value="7")
+slider_obs = obs(s3)
 ```
 
 Slider uses the Vue Slider Component from https://github.com/NightCatSama/vue-slider-component
@@ -25,20 +40,28 @@ To make a vertical slider you can use
 ```
 s = slider(1:10; label="level", value="3", orientation="vertical")
 ```
-
 N.b. there is also a shorthand for that particular case - `vslider`
 """
-function slider{T}(range::Range{T};
+function slider{T}(data::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
                 value=nothing,
                 ob=nothing,
                 label="", kwargs...)
-    ob, value = init_wsigval(ob, value; typ=T, default=medianelement(range))
-    push!(kwargs, (:min, first(range)), (:max, last(range)), (:interval, step(range)))
+    ob, value = init_wsigval(ob, value; typ=T, default=medianelement(data))
+    obshadow = ob
+    if data isa Range
+        push!(kwargs, (:min, first(data)), (:max, last(data)), (:interval, step(data)))
+    elseif data isa Vector
+        push!(kwargs, ("v-bind:data", JSON.json(collect(data))))
+    elseif data isa Associative
+        push!(kwargs, ("v-bind:data", data |> keys |> collect |> JSON.json))
+        obshadow = Observable(inverse_dict(data)[value])
+        map!((v)->data[v], ob, obshadow)
+    end
+
     push!(kwargs, (:ref, "slider"), ("v-model", "value"), (:style, "margin-top:30px"))
     attrdict = Dict(kwargs)
-    haskey(attrdict, :value) && (ob[] = attrdict[:value]) # set the ob to the initial value if provided
-    template = Node(:div)(label, Node(Symbol("vue-slider"); attributes=attrdict))
-    make_widget(template, ob)
+    template = dom"div"(label, dom"vue-slider"(attributes=attrdict))
+    s = make_widget(template, obshadow; realobs=ob)
 end
 
 """
@@ -46,7 +69,7 @@ end
 
 Same as `slider` just with orientation set to "vertical"
 """
-vslider(range; kwargs...) = slider(range; orientation="vertical", kwargs...)
+vslider(data; kwargs...) = slider(data; orientation="vertical", kwargs...)
 
 """
 button(label=""; ob::Observable = Observable(0))

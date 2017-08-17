@@ -56,3 +56,10 @@ function WebIO.render_inline(m::InteractNext.Manipulate)
 end
 
 widget(x::Range, label="") = slider(x; label=label)
+widget(x::Observable, label="") = x
+widget(x::WebIO.Node{WebIO.Widget}, label="") = x
+widget(x::AbstractVector, label="") = togglebuttons(x, label=label) # slider(x; label=label) ?
+widget(x::Associative, label="") = togglebuttons(x, label=label)
+widget(x::Bool, label="") = checkbox(x, label=label)
+widget(x::AbstractString, label="") = textbox(x, label=label, typ=AbstractString)
+# widget{T <: Number}(x::T, label="") = textbox(typ=T, value=x, label=label)

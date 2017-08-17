@@ -1,6 +1,6 @@
 export obs
 
-function vue(template, data=[], run_postdeps=(@js function() end); kwargs...)
+function vue(template, data=Dict(), run_postdeps=(@js function() end); kwargs...)
     id = WebIO.newid("vue-instance")
 
     wrapper = Widget(id,
@@ -43,7 +43,7 @@ function vue(template, data=[], run_postdeps=(@js function() end); kwargs...)
         Vue.use(VueMaterial)
         this.vue = @new Vue($options)
         $(values(watches)...)
-        ($run_postdeps)()
+        ($run_postdeps).apply(this.vue)
     end)
 
     wrapper(dom"div"(template; id=id))
@@ -54,10 +54,12 @@ widgobs = Dict{Any, Observable}()
 # users access a widget's Observable via this function
 obs(widget) = widgobs[widget]
 
-function make_widget(template, obs::Observable; obskey=:value, kwargs...)
-    on(identity, obs) # ensures updates propagate back to julia
-    widget = vue(template, [obskey=>obs]; kwargs...)
-    widgobs[widget] = obs
+function make_widget(template, wobs::Observable;
+                     obskey=:value, realobs=wobs, data=Dict(), kwargs...)
+    on(identity, wobs) # ensures updates propagate back to julia
+    data[obskey] = wobs
+    widget = vue(template, data; kwargs...)
+    widgobs[widget] = realobs
     widget
 end
 
@@ -85,5 +87,8 @@ end
 
 # Get median elements of ranges, used for initialising sliders.
 # Differs from median(r) in that it always returns an element of the range
-medianidx(r) = (1+length(r))>>1
-medianelement(r::Range) = r[medianidx(r)]
+medianidx(r) = (1+length(r)) ÷ 2
+medianelement(r::Union{Range, Array}) = r[medianidx(r)]
+medianelement(r::Associative) = collect(values(r))[medianidx(values(r))]
+
+inverse_dict(d::Associative) = Dict(zip(values(d), keys(d)))

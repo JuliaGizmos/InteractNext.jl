@@ -67,8 +67,6 @@ function radiobuttons(labels_values::Associative;
     end
     template = dom"div"(btns...)
     radiobtns = InteractNext.make_widget(template, obshadow; realobs=ob, obskey=:radio)
-    widgobs[radiobtns] = ob
-    radiobtns
 end
 
 """
