@@ -1,11 +1,40 @@
 export obs
 
-function vue(template, data=Dict(), run_postdeps=(@js function() end); kwargs...)
+const noopjs = (@js function() end)
+
+const vue_deps = [Dict("url"=>"vue", "type"=>"js")]
+# Run before dependencies are loaded to set up js paths
+const systemjs_config_vue = Dict(
+    "paths"=>Dict("vue"=>"https://gitcdn.xyz/repo/vuejs/vue/v2.4.2/dist/vue.js")
+)
+const vue_predeps_fn = @js function ()
+    SystemJS.config($systemjs_config_vue)
+end
+
+"""
+
+`kwargs` can be used to pass extra options to the Vue(...) function. E.g.
+`vue(...; methods=Dict(:sayhello=>@js function(){ alert("hello!") }))`
+
+JS widget creation callback functions:
+`run_predeps()`: runs before dependencies are loaded, so can be used to specify
+dependency paths for example.
+`run_ondeps(Vue, Dep_Modules...)`: runs after dependencies are loaded, but
+before the Vue instance is created. Can be used to initialise component
+libraries for the Vue instance. Arguments passed to run_ondeps are the Vue instance,
+then any module objects of the JS libs specified in dependencies.
+`run_post(Vue, Dep_Modules...)`: runs after the Vue instance is created.
+
+For all the above JS functions `this` is set to the Widget instance. In run_post
+this.vue will refer to the current Vue instance.
+"""
+function vue(template, data=Dict(); dependencies=vuedep,
+             run_predeps=vue_predeps_fn, run_ondeps=noopjs, run_post=noopjs,
+             kwargs...)
     id = WebIO.newid("vue-instance")
 
     wrapper = Widget(id,
-        # The urls for these deps are defined in setup.jl
-        dependencies=widget_deps
+        dependencies=dependencies
     )
 
     init = Dict()
@@ -32,19 +61,21 @@ function vue(template, data=Dict(), run_postdeps=(@js function() end); kwargs...
         end
     end
 
-    onjs(wrapper, "preDependencies", @js function (ctx)
-        SystemJS.config($systemjs_config)
-    end)
-
     options = merge(Dict("el"=>"#$id", "data"=>init), Dict(kwargs))
 
-    ondependencies(wrapper, @js function (Vue, VueSlider, VueMaterial)
-        Vue.component("vue-slider", VueSlider)
-        Vue.use(VueMaterial)
+    # Run before dependencies are loaded, e.g. to set up SystemJS config
+    onjs(wrapper, "preDependencies", run_predeps)
+
+    ondeps_fn = @js function (Vue)
+        # `this` is set to the JS Widget instance, if other deps have been
+        # specified then
+        ($run_ondeps).apply(this, arguments)
         this.vue = @new Vue($options)
         $(values(watches)...)
-        ($run_postdeps).apply(this.vue)
-    end)
+        ($run_post).apply(this, arguments)
+    end
+
+    ondependencies(wrapper, ondeps_fn)
 
     wrapper(dom"div"(template; id=id))
 end
@@ -55,10 +86,12 @@ widgobs = Dict{Any, Observable}()
 obs(widget) = widgobs[widget]
 
 function make_widget(template, wobs::Observable;
-                     obskey=:value, realobs=wobs, data=Dict(), kwargs...)
+                     obskey=:value, realobs=wobs, data=Dict(),
+                     run_predeps=predeps_fn, run_ondeps=ondeps_fn, kwargs...)
     on(identity, wobs) # ensures updates propagate back to julia
     data[obskey] = wobs
-    widget = vue(template, data; kwargs...)
+    widget = vue(template, data; dependencies=widget_deps,
+                 run_predeps=run_predeps, run_ondeps=run_ondeps, kwargs...)
     widgobs[widget] = realobs
     widget
 end
