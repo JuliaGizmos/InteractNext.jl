@@ -5,6 +5,7 @@ const jspaths = Dict(
     "vue-slider"=>"https://gitcdn.xyz/repo/NightCatSama/vue-slider-component/v2.3.5/dist/index.js",
     "vue-material"=>"https://gitcdn.xyz/repo/vuematerial/vue-material/v0.7.4/dist/vue-material.js",
     "katex"=>"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.2/katex.min.js",
+    "katex-auto"=>"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.2/contrib/auto-render.min.js",
     # "vue-material"=>"https://gitcdn.xyz/repo/vuematerial/vue-material/develop/dist/vue-material.js",
     # "vue-material"=>"https://gitcdn.xyz/repo/JobJob/vue-material/dev/dist/vue-material.js",
     # "vue-material"=>"file:///Users/job/Code/js/vue-material/dist/vue-material.js",
@@ -16,18 +17,19 @@ const widget_deps = [
     # css only gets loaded once - not for all widgets - see
     # https://github.com/JuliaGizmos/WebIO.jl/blob/master/assets/basics/node.js#L206
 
+    # Katex CSS
+    Dict("url"=>"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.2/katex.min.css", "type"=>"css"),
+
     # Vue material CSS
     Dict("url"=>"https://gitcdn.xyz/repo/vuematerial/vue-material/v0.7.4/dist/vue-material.css", "type"=>"css"),
     # Dict("url"=>"https://gitcdn.xyz/repo/vuematerial/vue-material/develop/dist/vue-material.css", "type"=>"css"),
-
-    # Katex CSS
-    Dict("url"=>"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.2/katex.min.css", "type"=>"css"),
 
     # Widget js libs whose paths are set in the call to SystemJS.config
     Dict("url"=>"vue", "type"=>"js"),
     Dict("url"=>"vue-slider", "type"=>"js"),
     Dict("url"=>"vue-material", "type"=>"js"),
     Dict("url"=>"katex", "type"=>"js"),
+    Dict("url"=>"katex-auto", "type"=>"js"),
 ]
 
 const systemjs_config = Dict(
@@ -41,9 +43,11 @@ end
 
 # Run when dependencies are loaded, but before Vue instance is created
 # Initialises Vue componenet libraries
-const ondeps_fn = @js function (Vue, VueSlider, VueMaterial, Katex)
+const ondeps_fn = @js function (Vue, VueSlider, VueMaterial, Katex, KatexAuto)
     Vue.component("vue-slider", VueSlider)
     Vue.use(VueMaterial)
+    window.katex = Katex
+    window.katex.renderMathInElement = KatexAuto
 end
 
 function webio_setup()

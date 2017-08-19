@@ -4,6 +4,7 @@ using DataStructures, JSON
 
 include("widget_utils.jl")
 include("options_widgets.jl")
+include("output_widgets.jl")
 
 """
 ```

@@ -28,7 +28,7 @@ then any module objects of the JS libs specified in dependencies.
 For all the above JS functions `this` is set to the Widget instance. In run_post
 this.vue will refer to the current Vue instance.
 """
-function vue(template, data=Dict(); dependencies=vuedep,
+function vue(template, data=Dict(); dependencies=vue_deps,
              run_predeps=vue_predeps_fn, run_ondeps=noopjs, run_post=noopjs,
              kwargs...)
     id = WebIO.newid("vue-instance")
@@ -46,13 +46,12 @@ function vue(template, data=Dict(); dependencies=vuedep,
             setobservable!(wrapper, skey, v)
 
             # forward updates from Julia to the Vue property
-            # onjs(v, @js (val) -> (debugger; this.vue[$skey] = val))
             onjs(v, @js (val) -> (this.vue[$skey] = val))
 
             # forward vue updates back to WebIO observable
             # which might send it to Julia
             watches[skey] = @js this.vue["\$watch"]($skey, function (newval, oldval)
-                    # debugger
+                    # `this` is the vue instance in here
                     $v[] = newval
                 end)
             init[skey] = v[]
