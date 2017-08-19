@@ -51,9 +51,9 @@ function vue(template, data=Dict(); dependencies=vue_deps,
             # forward vue updates back to WebIO observable
             # which might send it to Julia
             watches[skey] = @js this.vue["\$watch"]($skey, function (newval, oldval)
-                    # `this` is the vue instance in here
-                    $v[] = newval
-                end)
+                # `this` is the vue instance in here
+                $v[] = newval
+            end)
             init[skey] = v[]
         else
             init[skey] = v
@@ -76,7 +76,7 @@ function vue(template, data=Dict(); dependencies=vue_deps,
 
     ondependencies(wrapper, ondeps_fn)
 
-    wrapper(dom"div"(template; id=id))
+    wrapper(dom"div#$id"(template))
 end
 
 # store mapping from widgets to observables
@@ -86,8 +86,9 @@ obs(widget) = widgobs[widget]
 
 function make_widget(template, wobs::Observable;
                      obskey=:value, realobs=wobs, data=Dict(),
-                     run_predeps=predeps_fn, run_ondeps=ondeps_fn, kwargs...)
-    on(identity, wobs) # ensures updates propagate back to julia
+                     run_predeps=predeps_fn, run_ondeps=ondeps_fn,
+                     watch_obs=true, kwargs...)
+    watch_obs && on(identity, wobs) # ensures updates propagate back to julia
     data[obskey] = wobs
     widget = vue(template, data; dependencies=widget_deps,
                  run_predeps=run_predeps, run_ondeps=run_ondeps, kwargs...)
