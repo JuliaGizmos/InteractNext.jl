@@ -51,11 +51,6 @@ medianelement(r::Associative) = collect(values(r))[medianidx(values(r))]
 
 inverse_dict(d::Associative) = Dict(zip(values(d), keys(d)))
 
-wdglabel(text; padt=5, padr=10, padb=0, padl=0) =
-    dom"label[class=md-subheading]"(text;
-        style=Dict(:padding=>"$(padt)px $(padr)px $(padb)px $(padl)px")
-    )
-
 const Propkey = Union{Symbol, String}
 
 """
@@ -93,9 +88,12 @@ So we have the following for a ((camelCased) propname, value) pair:
 Note that the data dict requires the camelCased propname in the keys
 """
 function kwargs2vueprops(kwargs; extra_vbinds=Dict())
-    data = Dict{Propkey, Any}(merge(kwargs, Dict(values(extra_vbinds))))
-    camelkeys = map(string, Iterators.flatten((keys(data), keys(extra_vbinds))))
+    extradata = Dict(values(extra_vbinds))
+    extravbind_dic = Dict{String, String}(
+        zip(map(camel2kebab, keys(extra_vbinds)), keys(extradata)))
+    data = Dict{Propkey, Any}(merge(kwargs, extradata))
+    camelkeys = map(string, keys(data))
     propapropkeys = camel2kebab.(camelkeys) # kebabs are propa bo
     vbindprops = Dict{Propkey, String}(zip(propapropkeys, camelkeys))
-    vbindprops, data
+    merge(vbindprops, extravbind_dic), data
 end

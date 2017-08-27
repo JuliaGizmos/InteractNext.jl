@@ -79,13 +79,19 @@ function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
     end
 
     isvert = get(kwdata, :direction, "horizontal") == "vertical"
-    direction_styles = if isvert
+    extra_styles = if isvert
         kwdata[:dotSize] = 12
         Dict("width"=>"12px", :height=>"300px", Symbol("margin-left")=>"50px",
         :padding=>"0.1px")
     else
-        Dict(:width=>"60%", Symbol("margin-top")=>"40px", Symbol("margin-bottom")=>"25px",
-             :padding=>"2px")
+        Dict(:width=>"60%", Symbol("margin-top")=>"40px", :padding=>"2px")
+    end
+
+    labelwdg = if get(kwdata, :piecewiseLabel, false)
+        extra_styles[Symbol("margin-bottom")] = "25px"
+        wdglabel(label; padt=32, style=Dict(Symbol("vertical-align")=>"top"))
+    else
+        wdglabel(label)
     end
 
     vbindprops, data = kwargs2vueprops(kwdata; extra_vbinds=extra_vbinds)
@@ -93,9 +99,9 @@ function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
     prop_str = props2str(vbindprops, Dict("ref"=>"slider", "v-model"=>"value"))
 
     template = dom"div"(
-        wdglabel(label),
+        labelwdg,
         dom"vue-slider[$prop_str]"(
-            style=merge(Dict(:display=>"inline-block"), direction_styles)
+            style=merge(Dict(:display=>"inline-block"), extra_styles)
         )
     )
     s = make_widget(template, ob; data=data)
@@ -157,4 +163,12 @@ function textbox(label=""; ob::Observable = Observable(""), placeholder="")
                  dom"""md-input[v-model=text, placeholder=$placeholder]"""(),
                )
     textbox = make_widget(template, ob; obskey=:text)
+end
+
+function wdglabel(text; padt=5, padr=10, padb=0, padl=0, style=Dict())
+    fullstyle = Dict(:padding=>"$(padt)px $(padr)px $(padb)px $(padl)px")
+    merge!(fullstyle, style)
+    dom"label[class=md-subheading]"(text;
+        style=fullstyle
+    )
 end
