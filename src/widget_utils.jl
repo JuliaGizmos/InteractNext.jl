@@ -92,9 +92,9 @@ So we have the following for a ((camelCased) propname, value) pair:
 `data[propname] == value`
 Note that the data dict requires the camelCased propname in the keys
 """
-function kwargs2vueprops(kwargs)
-    data = Dict{Propkey, Any}(kwargs)
-    camelkeys = map(string, keys(data))
+function kwargs2vueprops(kwargs; extra_vbinds=Dict())
+    data = Dict{Propkey, Any}(merge(kwargs, Dict(values(extra_vbinds))))
+    camelkeys = map(string, Iterators.flatten((keys(data), keys(extra_vbinds))))
     propapropkeys = camel2kebab.(camelkeys) # kebabs are propa bo
     vbindprops = Dict{Propkey, String}(zip(propapropkeys, camelkeys))
     vbindprops, data

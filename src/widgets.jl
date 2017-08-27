@@ -57,36 +57,45 @@ function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
                 label="", kwargs...)
     ob, value = init_wsigval(ob, value; typ=T, default=medianelement(vals))
 
-    vbindprops, data = kwargs2vueprops(kwargs)
+    kwdata = Dict{Propkey, Any}(kwargs)
 
     # add the label to the component's data
-    data[:label] = label
+    kwdata[:label] = label
+
+    extra_vbinds = Dict()
 
     if vals isa Range
         for (key, value) in
         ((:min, first(vals)), (:max, last(vals)), (:interval, step(vals)))
             # set the data to be added to the Vue instance with the same key
-            data[key] = value
-            # bind the prop name to the data with the same key
-            vbindprops[key] = "$key"
+            kwdata[key] = value
         end
     elseif vals isa Vector
-        vbindprops["data"] = "vals"
         # we use WebIO.jsexpr so that the slider can have functions as values
         # which could be interesting
-        data["vals"] = WebIO.jsexpr(vals)
+        extra_vbinds["data"] = "vals"=>WebIO.jsexpr(vals)
     elseif vals isa Associative
-        vbindprops["data"] = "vals"
-        data["vals"] = WebIO.jsexpr(vals |> keys |> collect)
+        extra_vbinds["data"] = "vals"=>WebIO.jsexpr(vals |> keys |> collect)
     end
 
+    isvert = get(kwdata, :direction, "horizontal") == "vertical"
+    direction_styles = if isvert
+        kwdata[:dotSize] = 12
+        Dict("width"=>"12px", :height=>"300px", Symbol("margin-left")=>"50px",
+        :padding=>"0.1px")
+    else
+        Dict(:width=>"60%", Symbol("margin-top")=>"40px", Symbol("margin-bottom")=>"25px",
+             :padding=>"2px")
+    end
+
+    vbindprops, data = kwargs2vueprops(kwdata; extra_vbinds=extra_vbinds)
+
     prop_str = props2str(vbindprops, Dict("ref"=>"slider", "v-model"=>"value"))
+
     template = dom"div"(
         wdglabel(label),
         dom"vue-slider[$prop_str]"(
-            style=Dict(:width=>"60%", :display=>"inline-block",
-                :padding=>"2px", Symbol("margin-top")=>"40px",
-                Symbol("margin-bottom")=>"25px")
+            style=merge(Dict(:display=>"inline-block"), direction_styles)
         )
     )
     s = make_widget(template, ob; data=data)
