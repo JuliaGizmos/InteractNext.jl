@@ -1,4 +1,4 @@
-export slider, button, checkbox, textbox
+export slider, vslider, button, checkbox, textbox
 
 using DataStructures, JSON
 
@@ -40,7 +40,7 @@ Slider uses the Vue Slider Component from https://github.com/NightCatSama/vue-sl
 you can pass any properties you wish to set using kwargs, e.g.
 To make a vertical slider you can use
 ```
-s = slider(1:10; label="level", value="3", orientation="vertical")
+s = slider(1:10; label="level", value="3", direction="vertical")
 ```
 N.b. there is also a shorthand for that particular case - `vslider`
 
@@ -93,11 +93,11 @@ function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
 end
 
 """
-`vslider(range::Range; kwargs...)`
+`vslider(data; kwargs...)`
 
-Same as `slider` just with orientation set to "vertical"
+Same as `slider` just with direction set to "vertical"
 """
-vslider(data; kwargs...) = slider(data; orientation="vertical", kwargs...)
+vslider(data; kwargs...) = slider(data; direction="vertical", kwargs...)
 
 """
 button(text=""; ob::Observable = Observable(0))
@@ -111,7 +111,7 @@ function button(text=""; ob::Observable = Observable(0), label="")
         wdglabel(label),
         dom"md-button"(text, attributes=attrdict)
     )
-    button = make_widget(template, clicks; obskey=:clicks)
+    button = make_widget(template, ob; obskey=:clicks)
 end
 
 """
