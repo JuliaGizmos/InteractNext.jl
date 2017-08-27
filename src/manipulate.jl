@@ -1,9 +1,4 @@
-export @manipulate, Manipulate
-
-struct Manipulate
-    widgets::Vector # of WebIO Widgets I guess
-    outobs::Observable
-end
+export @manipulate
 
 function make_widget(binding)
     if binding.head != :(=)
@@ -43,16 +38,8 @@ macro manipulate(expr)
 
     widgets = map(make_widget, bindings)
     quote
-        Manipulate([$(widgets...)], $(esc(map_block(block, syms))))
+        dom"div"($(widgets...), WebIO.render($(esc(map_block(block, syms)))))
     end
-end
-
-function WebIO.render(m::InteractNext.Manipulate)
-    dom"div"(m.widgets..., WebIO.render(m.outobs))
-end
-
-function WebIO.render_inline(m::InteractNext.Manipulate)
-    "Manipulate with $(length(m.widgets)) widget(s) and output of type $(typeof(m.outobs[]))" #TODO change to eltype(m.outobs)
 end
 
 widget(x::Range, label="") = slider(x; label=label)

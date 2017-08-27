@@ -56,5 +56,4 @@ const ondeps_fn = @js function (Vue, VueSlider, VueMaterial, Katex, KatexAuto)
 end
 
 function webio_setup()
-    Base.invokelatest(WebIO.register_renderable, Manipulate)
 end
