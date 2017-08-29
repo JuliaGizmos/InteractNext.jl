@@ -97,31 +97,41 @@ WebIO.render_inline(m1) |> println;
 #---
 using InteractNext
 using Blink
-# using InteractNext, Blink
 using PlotlyJS
 mp = @manipulate for k in 1:20, a in ["so", "it", "seems"]
     x = 0:0.1:30
     y = sin.(k*x)
-    (a, plot(x, y))
-end
+    plot(x, y)
+end;
 w = Window()
 body!(w, mp)
 # ^^^
 
 #---
 using Mux
-using InteractNext, Plots
+using InteractNext, PlotlyJS
 
-plot(1:10)
+# plot(1:10)
 
 function myapp(req)
+    x = 0:0.1:30
     @manipulate for k in 1:20
-        plot(x->sin(k*x), 0:0.1:30)
+        y = sin.(k*x)
+        plot(x, y)
     end
 end
 
 webio_serve(page("/", req -> myapp(req)))
 
+#---
+# Atom
+using InteractNext
+using PlotlyJS
+x = 0:0.1:30
+mp = @manipulate for k in 1:20
+    y = sin.(k*x)
+    plot(x, y)
+end
 #---
 using Blink, InteractNext
 w = Window()
