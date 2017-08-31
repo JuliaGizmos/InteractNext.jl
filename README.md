@@ -8,12 +8,14 @@ Over time it should also hopefully support anywhere Julia can be used to show ht
 
 Currently InteractNext is not in metadata, and neither are a few packages it is built on, so for now installation is:
 ```
-Pkg.clone("https://github.com/JuliaGizmos/Observables.jl")
+Pkg.checkout("Observables")
 Pkg.clone("https://github.com/JuliaGizmos/WebIO.jl")
+Pkg.clone("https://github.com/JuliaGizmos/Vue.jl")
 Pkg.clone("https://github.com/JuliaGizmos/InteractNext.jl")
 ```
+If you have those packages already, you'll want to ensure they're on master too, since they're under development atm, so
 
-Unfortunately, until a proper WebIO release is made, we will need to run a couple of further steps. Firstly the [node.js](https://nodejs.org/en/) will need to be installed. And then, run these at a Julia prompt:
+Unfortunately, until a proper WebIO release is made, we will need to run a couple of further steps. Firstly [node.js](https://nodejs.org/en/) will need to be installed. And then, run these at a Julia prompt:
 ```
 using WebIO
 WebIO.devsetup()
