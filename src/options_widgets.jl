@@ -3,7 +3,7 @@ export togglebuttons, radiobuttons, dropdown
 """
 ```
 togglebuttons(labels_values::Associative;
-              value = first(values(labels_values)),
+              value = medianelement(values(labels_values)),
               ob::Observable = Observable(value),
               multiselect=false)
 
@@ -19,7 +19,7 @@ e.g. `togglebuttons(OrderedDict("good"=>1, "better"=>2, "amazing"=>9001))`
 function togglebuttons(labels_values::Associative;
                        ob = nothing, value=nothing, multiselect=false, label="")
     defaultval = multiselect ?
-        Vector{valtype(labels_values)}() : first(values(labels_values))
+        Vector{valtype(labels_values)}() : medianelement(labels_values)
     ob, value = init_wsigval(ob, value; default=defaultval)
     buttons =
         dom"md-button[v-on:click=select_fn(value), :key=idx,
@@ -27,7 +27,8 @@ function togglebuttons(labels_values::Associative;
             "{{label}}",
             # commas in attribute values (value, label, idx), don't parse well
             # in the dom"...", so we'll use the `attributes` kwarg
-            attributes=Dict("v-for"=>"(value, label, idx) in labels_values")
+            attributes=Dict("v-for"=>"(value, label, idx) in labels_values"),
+            style=Dict(:textTransform=>"none")
         )
     select_fn = @js function (val)
         if (this.single_select)
@@ -53,7 +54,7 @@ function togglebuttons(labels_values::Associative;
         dom"md-button-toggle[class=md-raised md-primary, :md-single=single_select, :md-manual-toggle=manual_toggle]"(buttons),
         style=Dict(:display=>"inline-flex")
     )
-    toglbtns = InteractNext.make_widget(template, ob;
+    toglbtns = make_widget(template, ob;
         obskey=:selected,
         methods=Dict("select_fn"=>select_fn, "is_selected"=>is_selected),
         data=Dict{Symbol, Any}(:single_select=>!multiselect,

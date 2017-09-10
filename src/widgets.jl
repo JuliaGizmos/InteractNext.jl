@@ -70,12 +70,26 @@ function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
             # set the data to be added to the Vue instance with the same key
             kwdata[key] = value
         end
-    elseif vals isa Vector
-        # we use WebIO.jsexpr so that the slider can have functions as values
-        # which could be interesting
-        extra_vbinds["data"] = "vals"=>WebIO.jsexpr(vals)
-    elseif vals isa Associative
-        extra_vbinds["data"] = "vals"=>WebIO.jsexpr(vals |> keys |> collect)
+    else
+        # Vector or Associative
+        if vals isa Vector
+            vlabels = eltype(vals) <: AbstractFloat ?
+                map(x->round(x, 2)|>string, vals) : string.(vals)
+            vals = OrderedDict(zip(vlabels, vals))
+        end
+
+        # selection slider labels are the keys
+        kwdata[:formatter] = @js function(v)
+            if (v % 1 === 0) v = v + ".0" end # js removes decimal points on Ints
+            $(inverse_dict(vals))[v]
+        end
+        # selection slider vals are the values
+        svals = values(vals) |> collect
+        kwdata[:piecewise] = true
+        length(svals) < 10 && (kwdata[:piecewiseLabel] = true)
+        # using WebIO.jsexpr here allows the slider to potentially have
+        # functions as values, which could be interesting.
+        extra_vbinds["data"] = "vals"=>WebIO.jsexpr(svals)
     end
 
     isvert = get(kwdata, :direction, "horizontal") == "vertical"

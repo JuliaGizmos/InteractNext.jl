@@ -47,7 +47,8 @@ end
 # Differs from median(r) in that it always returns an element of the range
 medianidx(r) = (1+length(r)) ÷ 2
 medianelement(r::Union{Range, Array}) = r[medianidx(r)]
-medianelement(r::Associative) = collect(values(r))[medianidx(values(r))]
+medianval(r::Associative) = medianelement(collect(values(r)))
+medianelement(r::Associative) = medianval(r)
 
 inverse_dict(d::Associative) = Dict(zip(values(d), keys(d)))
 

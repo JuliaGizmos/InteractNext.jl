@@ -65,13 +65,41 @@ body!(w, dom"div"(s1, WebIO.render(sobs)))
 #---
 sobs[] = 9
 #---
+#Blink
+using Blink
 using InteractNext
+using DataStructures
+using PlotlyJS
+using CSSUtil
+
+function WebIO.render(x)
+    dom"div"(; setInnerHtml=InteractNext.richest_html(x))
+end
+
+WebIO.render(::Void) = ""
+
+x = 0:0.1:30
+p = plot(x, []);
+
+freqs = OrderedDict(zip(["pi/4", "π/2", "3π/4", "π"], [π/4, π/2, 3π/4, π]))
+
+mp = @manipulate for freq1 in freqs, freq2 in slider(0.01:0.1:4π; label="freq2")
+    y = @. sin(freq1*x) * sin(freq2*x)
+    restyle!(p, y=[y])
+    nothing
+end
+w = Window()
+p.view.w = w
+body!(w, vbox(mp, p))
+#^^^
 #---
-m1 = @manipulate for i in 1:20
+@manipulate for i in 1:20
     i
 end
 #---
-m1
+using WebIO
+#---
+dom"div"("hi")
 #---
 stringmime(MIME"text/html"(), (Blink.@js w Plotly)) |> println
 #---
@@ -85,8 +113,8 @@ using InteractNext, Plots
 #---
 plot(1:10) # MethodError due to world age until this is merged: https://github.com/JuliaPlots/Plots.jl/pull/916
 #---
-@manipulate for k in 1:20
-    plot(x->sin(0.3k*x), 0:0.1:30)
+@manipulate for freq in [0.1, 1.0, 2.0], phase in 0:0.1:2pi
+    plot(x->sin(freq*x+phase), 0:0.1:30)
 end
 #---
 m1 = @manipulate for k in 1:20
@@ -128,8 +156,8 @@ webio_serve(page("/", req -> myapp(req)))
 using InteractNext
 using PlotlyJS
 x = 0:0.1:30
-mp = @manipulate for k in 1:20
-    y = sin.(k*x)
+mp = @manipulate for freq in [0.1, 1.0, 2.0], phase in 0:0.1:2pi
+    y = sin.(freq.*x .+ phase)
     plot(x, y)
 end
 #---

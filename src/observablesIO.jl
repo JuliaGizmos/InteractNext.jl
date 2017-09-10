@@ -1,21 +1,12 @@
-const mime_order = map(MIME, [ "text/html", "text/latex", "image/svg+xml", "image/png", "image/jpeg", "text/markdown", "application/javascript", "text/plain" ])
-
-function richest_mime(val)
-    for mimetype in mime_order
-        mimewritable(mimetype, val) && return mimetype
-    end
-    error("value not writable for any mimetypes")
-end
-
-richest_html(val) = stringmime(richest_mime(val), val) |> WebIO.encode_scripts
+import WebIO: render, richest_html
 
 """
-toNode(obs::Observable)
+WebIO.render(obs::Observable)
 
 Returns a WebIO Node whose contents are the richest version of the observable's
 value, and which updates to display the observable's current value
 """
-function WebIO.render(obs::Observable)
+function render(obs::Observable)
     # setup output area which updates when `obs`'s value changes
     w = Widget()
 
