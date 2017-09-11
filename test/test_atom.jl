@@ -1,17 +1,8 @@
 # Atom
-using InteractNext
-using DataStructures
-using PlotlyJS
-using CSSUtil
+using InteractNext, PlotlyJS, CSSUtil, DataStructures
 
-function WebIO.render(x)
-    dom"div"(; setInnerHtml=InteractNext.richest_html(x))
-end
-
-WebIO.render(::Void) = dom"span"()
-
-x = 0:0.1:30
-p = plot(x, [])
+x = y = 0:0.1:30
+p = plot(x, y)
 
 freqs = OrderedDict(zip(["pi/4", "π/2", "3π/4", "π"], [π/4, π/2, 3π/4, π]))
 
