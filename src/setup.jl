@@ -1,14 +1,14 @@
 const jspaths = Dict(
     "vue"=>"https://unpkg.com/vue@2.4.2",
-    # "vue"=>"https://gitcdn.xyz/repo/vuejs/vue/master/dist/vue.min.js",
-    # "vue"=>"https://gitcdn.xyz/repo/vuejs/vue/v2.4.2/dist/vue.js",
-    "vue-slider"=>"https://gitcdn.xyz/repo/NightCatSama/vue-slider-component/v2.3.5/dist/index.js",
-    # "vue-material"=>"https://gitcdn.xyz/repo/vuematerial/vue-material/v0.7.4/dist/vue-material.js",
-    "vue-material"=>"https://gitcdn.xyz/repo/JobJob/vue-material/js-dist/dist/vue-material.js",
+    # "vue"=>"https://gitcdn.xyz/cdn/vuejs/vue/master/dist/vue.min.js",
+    # "vue"=>"https://gitcdn.xyz/cdn/vuejs/vue/v2.4.2/dist/vue.js",
+    "vue-slider"=>"https://gitcdn.xyz/cdn/NightCatSama/vue-slider-component/v2.3.5/dist/index.js",
+    # "vue-material"=>"https://gitcdn.xyz/cdn/vuematerial/vue-material/v0.7.4/dist/vue-material.js",
+    "vue-material"=>"https://gitcdn.xyz/cdn/JobJob/vue-material/js-dist/dist/vue-material.js",
     "katex"=>"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.2/katex.min.js",
     "katex-auto"=>"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.2/contrib/auto-render.min.js",
-    # "vue-material"=>"https://gitcdn.xyz/repo/vuematerial/vue-material/develop/dist/vue-material.js",
-    # "vue-material"=>"https://gitcdn.xyz/repo/JobJob/vue-material/dev/dist/vue-material.js",
+    # "vue-material"=>"https://gitcdn.xyz/cdn/vuematerial/vue-material/develop/dist/vue-material.js",
+    # "vue-material"=>"https://gitcdn.xyz/cdn/JobJob/vue-material/dev/dist/vue-material.js",
     # "vue-material"=>"file:///Users/job/Code/js/vue-material/dist/vue-material.js",
 )
 
@@ -22,8 +22,8 @@ const widget_deps = [
     Dict("url"=>"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.2/katex.min.css", "type"=>"css"),
 
     # Vue material CSS
-    Dict("url"=>"https://gitcdn.xyz/repo/JobJob/vue-material/css-dist/dist/vue-material.css", "type"=>"css"),
-    # Dict("url"=>"https://gitcdn.xyz/repo/vuematerial/vue-material/develop/dist/vue-material.css", "type"=>"css"),
+    Dict("url"=>"https://gitcdn.xyz/cdn/JobJob/vue-material/css-dist/dist/vue-material.css", "type"=>"css"),
+    # Dict("url"=>"https://gitcdn.xyz/cdn/vuematerial/vue-material/develop/dist/vue-material.css", "type"=>"css"),
 
     # Widget js libs whose paths are set in the call to SystemJS.config
     Dict("url"=>"vue", "type"=>"js"),
