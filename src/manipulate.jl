@@ -16,7 +16,13 @@ end
 function map_block(block, symbols)
     lambda = Expr(:(->), Expr(:tuple, symbols...),
                   block)
-    :(map($lambda, $(map(s->:(obs($s)), symbols)...)))
+    f = gensym()
+    quote
+        $f = $lambda
+        ob = Observable{Any}($f($(map(s->:(obs($s)[]), symbols)...)))
+        map!($f, ob, $(map(s->:(obs($s)), symbols)...))
+        ob
+    end
 end
 
 function symbols(bindings)
