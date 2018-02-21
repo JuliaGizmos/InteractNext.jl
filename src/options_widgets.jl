@@ -3,7 +3,7 @@ export togglebuttons, radiobuttons, dropdown
 """
 ```
 togglebuttons(labels_values::Associative;
-              value = medianelement(values(labels_values)),
+              selected = medianelement(values(labels_values)),
               ob::Observable = Observable(value),
               multiselect=false)
 
@@ -17,10 +17,14 @@ corresponding to all selected buttons
 e.g. `togglebuttons(OrderedDict("good"=>1, "better"=>2, "amazing"=>9001))`
 """
 function togglebuttons(labels_values::Associative;
-                       ob = nothing, value=nothing, multiselect=false, label="")
-    defaultval = multiselect ?
-        Vector{Int}() : medianelement(1:length(labels_values))
-    ob, value = init_wsigval(ob, value; default=defaultval, typ=Any)
+                       multiselect=false, label="",
+                       selected = multiselect ?
+                           Vector{Int}() : medianelement(1:length(labels_values)))
+
+    if !(selected isa Observable)
+        selected = Observable{Any}(selected)
+    end
+
     buttons =
         dom"md-button[v-on:click=select_fn(value), :key=idx,
                       :class={'md-toggle': is_selected(value)}]"(
@@ -30,6 +34,7 @@ function togglebuttons(labels_values::Associative;
             attributes=Dict("v-for"=>"(value, label, idx) in labels_values"),
             style=Dict(:textTransform=>"none")
         )
+
     select_fn = @js function (val)
         if (this.single_select)
             this.selected = val
@@ -54,21 +59,23 @@ function togglebuttons(labels_values::Associative;
         dom"md-button-toggle[class=md-raised md-primary, :md-single=single_select, :md-manual-toggle=manual_toggle]"(buttons),
         style=Dict(:display=>"inline-flex")
     )
+
     vals = collect(values(labels_values))
-    labels_values
     labels_idxs = Dict(zip(keys(labels_values), 1:length(labels_values)))
-    ob2 = Observable{Any}(vals[defaultval])
-    on(ob) do x
+    ob2 = Observable{Any}(vals[selected[]])
+    on(selected) do x
         ob2[] = vals[x]
     end
-    toglbtns = make_widget(template, ob;
-        obskey=:selected,
-        realobs=ob2,
-        methods=Dict("select_fn"=>select_fn, "is_selected"=>is_selected),
-        data=Dict{Symbol, Any}(:single_select=>!multiselect,
-            :manual_toggle=>true,
-            :labels_values=>labels_idxs)
-    )
+
+    toglbtns = vue(template, ["selected" => selected,
+                              :single_select=>!multiselect,
+                              :manual_toggle=>true,
+                              :labels_values=>labels_idxs],
+                   methods=Dict("select_fn"=>select_fn,
+                                "is_selected"=>is_selected))
+    toglbtns["selected_value"] = ob2
+    primary_obs!(toglbtns, "selected_value")
+    slap_material_design!(toglbtns)
 end
 
 """
@@ -90,9 +97,11 @@ radiobuttons(labels_values::Associative;
 e.g. `radiobuttons(OrderedDict("good"=>1, "better"=>2, "amazing"=>9001))`
 """
 function radiobuttons(labels_values::Associative;
-                       ob = nothing, value=nothing, label="")
-    defaultval = first(values(labels_values))
-    ob, value = init_wsigval(ob, value; default=defaultval)
+                      selected=first(values(labels_values)), label="")
+    if !(selected isa Observable)
+        selected = Observable{Any}(selected)
+    end
+
     buttons =
         dom"md-radio[v-model=radio, :md-value=value, :key=idx, class=md-primary]"(
             "{{btnlabel}}",
@@ -101,8 +110,11 @@ function radiobuttons(labels_values::Associative;
             attributes=Dict("v-for"=>"(value, btnlabel, idx) in labels_values")
         )
     template = dom"div"(wdglabel(label), buttons)
-    radiobtns = InteractNext.make_widget(template, ob; obskey=:radio,
-                    data=Dict{Symbol, Any}(:labels_values=>labels_values))
+    radiobtns = vue(template, ["radio" => selected,
+                               :labels_values=>labels_values])
+    radiobtns["selected"] = selected
+    primary_obs!(radiobtns, "radio")
+    slap_material_design!(radiobtns)
 end
 
 """
@@ -133,21 +145,30 @@ e.g. `dropdown(OrderedDict("good"=>1, "better"=>2, "amazing"=>9001))`
 
 """
 function dropdown(labels_values::Associative;
-                  label="select", ob = nothing,
-                  value=nothing, modelkey="dropd",
-                  multiselect=false)
-    defaultval = multiselect ? valtype(labels_values)[] : first(values(labels_values))
-    ob, value = init_wsigval(ob, value; default=defaultval)
+                  label="select",
+                  multiselect=false,
+                  selected=multiselect ?
+                      valtype(labels_values)[] :
+                      first(values(labels_values)),
+                  modelkey="dropd",
+                  kwargs...)
+    if !(selected isa Observable)
+        selected = Observable{Any}(selected)
+    end
+
     menu_items = map(enumerate(labels_values)) do i_label_value
         i,(itemlabel, value) = i_label_value
         dom"""md-option[:key=$i, :value=$value]"""(itemlabel)
     end
     multi_str = multiselect ? ", multiple=true" : ""
-    template =  dom"md-input-container"(
-                    dom"label"(wdglabel(label)),
-                    dom"md-select[v-model=$modelkey$multi_str]"(menu_items...)
-                )
-    dropmenu = InteractNext.make_widget(template, ob; obskey=Symbol(modelkey))
+    template = dom"md-input-container"(
+                   dom"label"(wdglabel(label)),
+                   dom"md-select[v-model=$modelkey$multi_str]"(menu_items...)
+               )
+    dropmenu = vue(template, [modelkey => selected], kwargs...)
+    dropmenu["selected"] = dropmenu[modelkey]
+    primary_obs!(dropmenu, "selected")
+    slap_material_design!(dropmenu)
 end
 
 """

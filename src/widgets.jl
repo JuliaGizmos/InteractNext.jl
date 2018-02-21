@@ -131,7 +131,7 @@ function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
 
     end)
 
-    on(identity, s["value"])
+    primary_obs!(s, "value")
     s
 end
 
@@ -166,7 +166,7 @@ function button(text=""; clicks::Observable = Observable(0), label="")
         dom"md-button"(text, attributes=attrdict)
     )
     button = vue(template, ["clicks" => clicks]; obskey=:clicks)
-    on(identity, button["clicks"])
+    primary_obs!(button, "clicks")
     slap_material_design!(button)
 end
 
@@ -188,7 +188,7 @@ function checkbox(checked=false; label="")
     attrdict = Dict("v-model"=>"checked", "class"=>"md-primary")
     template = dom"md-checkbox"(attributes=attrdict)(label)
     checkbox = vue(template, ["checked" => checked])
-    on(identity, checkbox["checked"])
+    primary_obs!(checkbox, "checked")
     slap_material_design!(checkbox)
 end
 
@@ -215,7 +215,7 @@ function textbox(label="";
                )
 
     textbox = vue(template, ["text"=>text])
-    on(identity, textbox["text"])
+    primary_obs!(textbox, "text")
     slap_material_design!(textbox)
 end
 
