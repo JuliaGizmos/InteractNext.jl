@@ -55,7 +55,7 @@ function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
                 value=nothing,
                 ob=nothing,
                 label="", kwargs...)
-    ob, value = init_wsigval(ob, value; typ=T, default=medianelement(vals))
+    ob = Observable{T}(medianelement(vals))
 
     kwdata = Dict{Propkey, Any}(kwargs)
 
@@ -118,7 +118,18 @@ function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
             style=merge(Dict(:display=>"inline-block"), extra_styles)
         )
     )
-    s = make_widget(template, ob; data=data)
+    data["value"] = ob
+    s = vue(template, data)
+    import!(s, "https://nightcatsama.github.io/" *
+               "vue-slider-component/dist/index.js")
+
+    onimport(s, @js function (Vue, vueSlider)
+            Vue.component("vue-slider", vueSlider)
+
+    end)
+
+    on(identity, s["value"])
+    s
 end
 
 """
