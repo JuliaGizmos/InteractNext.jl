@@ -2,7 +2,6 @@ const jspaths = Dict(
     "vue"=>"https://unpkg.com/vue@2.4.2",
     # "vue"=>"https://gitcdn.xyz/cdn/vuejs/vue/master/dist/vue.min.js",
     # "vue"=>"https://gitcdn.xyz/cdn/vuejs/vue/v2.4.2/dist/vue.js",
-    "vue-slider"=>"https://gitcdn.xyz/cdn/NightCatSama/vue-slider-component/v2.3.5/dist/index.js",
     # "vue-material"=>"https://gitcdn.xyz/cdn/vuematerial/vue-material/v0.7.4/dist/vue-material.js",
     "vue-material"=>"https://gitcdn.xyz/cdn/JobJob/vue-material/js-dist/dist/vue-material.js",
     "katex"=>"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.2/katex.min.js",

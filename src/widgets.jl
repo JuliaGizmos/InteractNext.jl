@@ -151,7 +151,16 @@ function button(text=""; ob::Observable = Observable(0), label="")
         wdglabel(label),
         dom"md-button"(text, attributes=attrdict)
     )
-    button = make_widget(template, ob; obskey=:clicks)
+    button = vue(template, ["clicks" => ob]; obskey=:clicks)
+    import!(button, "https://gitcdn.xyz/cdn/JobJob/" *
+                    "vue-material/js-dist/dist/vue-material.js")
+    import!(button, "https://gitcdn.xyz/cdn/JobJob/" *
+                    "vue-material/css-dist/dist/vue-material.css")
+    on(identity, button["clicks"])
+    onimport(button, @js function (Vue, VueMaterial)
+        Vue.use(VueMaterial)
+    end)
+    button
 end
 
 """
