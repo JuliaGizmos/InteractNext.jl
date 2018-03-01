@@ -134,7 +134,7 @@ Same as `slider` just with direction set to "vertical"
 """
 vslider(data; kwargs...) = slider(data; direction="vertical", kwargs...)
 
-function slap_material_design!(w::Widget)
+function slap_material_design!(w::Scope)
     import!(w, "https://gitcdn.xyz/cdn/JobJob/" *
                "vue-material/js-dist/dist/vue-material.js")
     import!(w, "https://gitcdn.xyz/cdn/JobJob/" *
