@@ -54,10 +54,8 @@ function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
                 value=medianelement(vals),
                 label="", kwargs...)
 
-    if value isa Observable
-        ob = value
-    else
-        ob =  Observable{T}(medianelement(vals))
+    if !(value isa Observable)
+        value = Observable{T}(value)
     end
 
     kwdata = Dict{Propkey, Any}(kwargs)
@@ -68,10 +66,10 @@ function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
     extra_vbinds = Dict()
 
     if vals isa Range
-        for (key, value) in
+        for (key, val) in
         ((:min, first(vals)), (:max, last(vals)), (:interval, step(vals)))
             # set the data to be added to the Vue instance with the same key
-            kwdata[key] = value
+            kwdata[key] = val
         end
     else
         # Vector or Associative
@@ -121,7 +119,7 @@ function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
             style=merge(Dict(:display=>"inline-block"), extra_styles)
         )
     )
-    data["value"] = ob
+    data["value"] = value
     s = vue(template, data)
     import!(s, "https://nightcatsama.github.io/" *
                "vue-slider-component/dist/index.js")
