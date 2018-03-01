@@ -1,6 +1,6 @@
 module InteractNext
 
-using WebIO
+using WebIO, JSExpr
 
 include("package_support.jl")
 include("widgets.jl")
