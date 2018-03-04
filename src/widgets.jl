@@ -10,7 +10,6 @@ include("output_widgets.jl")
 ```
 function slider(vals; # Range or Vector or Associative
                 value=medianelement(range),
-                ob::Observable=Observable(value),
                 label="", kwargs...)
 ```
 
@@ -52,12 +51,17 @@ s = slider(1:10; piecewiseLabel=true)
 
 """
 function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
-                value=nothing,
-                ob=nothing,
+                value=medianelement(vals),
                 label="", kwargs...)
-    ob, value = init_wsigval(ob, value; typ=T, default=medianelement(vals))
+
+    if !(value isa Observable)
+        value = Observable{T}(value)
+    end
 
     kwdata = Dict{Propkey, Any}(kwargs)
+    if !haskey(kwdata, :useKeyboard)
+        kwdata[:useKeyboard] = true
+    end
 
     # add the label to the component's data
     kwdata[:label] = label
@@ -65,10 +69,10 @@ function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
     extra_vbinds = Dict()
 
     if vals isa Range
-        for (key, value) in
+        for (key, val) in
         ((:min, first(vals)), (:max, last(vals)), (:interval, step(vals)))
             # set the data to be added to the Vue instance with the same key
-            kwdata[key] = value
+            kwdata[key] = val
         end
     else
         # Vector or Associative
@@ -118,7 +122,18 @@ function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
             style=merge(Dict(:display=>"inline-block"), extra_styles)
         )
     )
-    s = make_widget(template, ob; data=data)
+    data["value"] = value
+    s = vue(template, data)
+    import!(s, "https://nightcatsama.github.io/" *
+               "vue-slider-component/dist/index.js")
+
+    onimport(s, @js function (Vue, vueSlider)
+            Vue.component("vue-slider", vueSlider)
+
+    end)
+
+    primary_obs!(s, "value")
+    s
 end
 
 """
@@ -128,55 +143,78 @@ Same as `slider` just with direction set to "vertical"
 """
 vslider(data; kwargs...) = slider(data; direction="vertical", kwargs...)
 
-"""
-button(text=""; ob::Observable = Observable(0))
+function slap_material_design!(w::Scope)
+    import!(w, "https://gitcdn.xyz/cdn/JobJob/" *
+               "vue-material/js-dist/dist/vue-material.js")
+    import!(w, "https://gitcdn.xyz/cdn/JobJob/" *
+               "vue-material/css-dist/dist/vue-material.css")
+    onimport(w, @js function (Vue, VueMaterial)
+        Vue.use(VueMaterial)
+    end)
+    w
+end
 
-Note the button text supports a special `clicks` variable, e.g.:
+"""
+`button(content=""; clicks::Observable)`
+
+A button. `content` goes inside the button.
+
+Note the button `content` supports a special `clicks` variable, e.g.:
 `button("clicked {{clicks}} times")`
 """
-function button(text=""; ob::Observable = Observable(0), label="")
+function button(text=""; clicks::Observable = Observable(0), label="")
     attrdict = Dict("v-on:click"=>"clicks += 1","class"=>"md-raised md-primary")
     template = dom"div"(
         wdglabel(label),
         dom"md-button"(text, attributes=attrdict)
     )
-    button = make_widget(template, ob; obskey=:clicks)
+    button = vue(template, ["clicks" => clicks]; obskey=:clicks)
+    primary_obs!(button, "clicks")
+    slap_material_design!(button)
 end
 
 """
-```
-checkbox(checked=false;
-         label="",
-         ob::Observable = Observable(checked))
-```
+`checkbox(checked::Union{Bool, Observable}=false; label)`
 
-e.g. `checkbox("be my friend?", checked=false)`
+A checkbox.
+
+e.g. `checkbox(label="be my friend?")`
 """
-function checkbox(checked=nothing;
-                  label="",
-                  ob=nothing)
-    ob, value = init_wsigval(ob, checked; default=false)
+function checkbox(checked=false; label="")
+
+    if !(checked isa Observable)
+        checked = Observable(checked)
+    end
+
     attrdict = Dict("v-model"=>"checked", "class"=>"md-primary")
-    template = Node(Symbol("md-checkbox"), attributes=attrdict)(label)
-    checkbox = make_widget(template, ob; obskey=:checked)
+    template = dom"md-checkbox"(attributes=attrdict)(label)
+    checkbox = vue(template, ["checked" => checked])
+    primary_obs!(checkbox, "checked")
+    slap_material_design!(checkbox)
 end
 
 """
-```
-textbox(label="";
-        ob::Observable = Observable(""))
-```
+`textbox(label=""; text::Union{String, Observable})`
 
 Create a text input area with an optional `label`
 
 e.g. `textbox("enter number:")`
 """
-function textbox(label=""; ob::Observable = Observable(""), placeholder="")
+function textbox(label="";
+                 text = "",
+                 placeholder="")
+
+    if !(text isa Observable)
+        text = Observable(text)
+    end
     template = dom"md-input-container"(
                  dom"label"(label),
                  dom"""md-input[v-model=text, placeholder=$placeholder]"""(),
                )
-    textbox = make_widget(template, ob; obskey=:text)
+
+    textbox = vue(template, ["text"=>text])
+    primary_obs!(textbox, "text")
+    slap_material_design!(textbox)
 end
 
 function wdglabel(text; padt=5, padr=10, padb=0, padl=0, style=Dict())

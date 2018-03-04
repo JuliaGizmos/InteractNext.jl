@@ -8,7 +8,7 @@ value, and which updates to display the observable's current value
 """
 function render(obs::Observable)
     # setup output area which updates when `obs`'s value changes
-    w = Widget()
+    w = Scope()
 
     # get the richest representation of obs's current value (as a string)
     html_contents_str = richest_html(obs[])
