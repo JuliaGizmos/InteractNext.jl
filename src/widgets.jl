@@ -59,6 +59,9 @@ function slider{T}(vals::Union{Range{T}, Vector{T}, Associative{<:Any, T}};
     end
 
     kwdata = Dict{Propkey, Any}(kwargs)
+    if !haskey(kwdata, :useKeyboard)
+        kwdata[:useKeyboard] = useKeyboard
+    end
 
     # add the label to the component's data
     kwdata[:label] = label
