@@ -19,8 +19,8 @@ e.g. `togglebuttons(OrderedDict("good"=>1, "better"=>2, "amazing"=>9001))`
 function togglebuttons(labels_values::Associative;
                        ob = nothing, value=nothing, multiselect=false, label="")
     defaultval = multiselect ?
-        Vector{valtype(labels_values)}() : medianelement(labels_values)
-    ob, value = init_wsigval(ob, value; default=defaultval)
+        Vector{Int}() : medianelement(1:length(labels_values))
+    ob, value = init_wsigval(ob, value; default=defaultval, typ=Any)
     buttons =
         dom"md-button[v-on:click=select_fn(value), :key=idx,
                       :class={'md-toggle': is_selected(value)}]"(
@@ -54,11 +54,20 @@ function togglebuttons(labels_values::Associative;
         dom"md-button-toggle[class=md-raised md-primary, :md-single=single_select, :md-manual-toggle=manual_toggle]"(buttons),
         style=Dict(:display=>"inline-flex")
     )
+    vals = collect(values(labels_values))
+    labels_values
+    labels_idxs = Dict(zip(keys(labels_values), 1:length(labels_values)))
+    ob2 = Observable{Any}(vals[defaultval])
+    on(ob) do x
+        ob2[] = vals[x]
+    end
     toglbtns = make_widget(template, ob;
         obskey=:selected,
+        realobs=ob2,
         methods=Dict("select_fn"=>select_fn, "is_selected"=>is_selected),
         data=Dict{Symbol, Any}(:single_select=>!multiselect,
-            :manual_toggle=>true, :labels_values=>labels_values)
+            :manual_toggle=>true,
+            :labels_values=>labels_idxs)
     )
 end
 
