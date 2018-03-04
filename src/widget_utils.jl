@@ -13,10 +13,11 @@ obs(widget) = widgobs[widget]
 sets up a primary observable for every
 widget for use in @manipulate
 """
-function primary_obs!(w, name)
-    widgobs[w] = w[name]
-    on(identity, w[name])
+function primary_obs!(w, ob)
+    widgobs[w] = ob
+    on(identity, ob)
 end
+primary_obs!(w, ob::String) = primary_obs!(w, w[ob])
 
 # Get median elements of ranges, used for initialising sliders.
 # Differs from median(r) in that it always returns an element of the range

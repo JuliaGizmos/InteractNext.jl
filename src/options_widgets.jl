@@ -73,8 +73,7 @@ function togglebuttons(labels_values::Associative;
                               :labels_values=>labels_idxs],
                    methods=Dict("select_fn"=>select_fn,
                                 "is_selected"=>is_selected))
-    toglbtns["selected_value"] = ob2
-    primary_obs!(toglbtns, "selected_value")
+    primary_obs!(toglbtns, ob2)
     slap_material_design!(toglbtns)
 end
 
