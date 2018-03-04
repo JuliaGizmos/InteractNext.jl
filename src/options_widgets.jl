@@ -157,7 +157,7 @@ function dropdown(labels_values::Associative;
 
     menu_items = map(enumerate(labels_values)) do i_label_value
         i,(itemlabel, value) = i_label_value
-        dom"""md-option[:key=$i, :value=$value]"""(itemlabel)
+        dom"""md-option[key=$i, value=$value]"""(itemlabel)
     end
     multi_str = multiselect ? ", multiple=true" : ""
     template = dom"md-input-container"(
