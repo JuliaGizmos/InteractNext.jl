@@ -155,9 +155,11 @@ function slap_material_design!(w::Scope)
 end
 
 """
-button(text=""; ob::Observable = Observable(0))
+`button(content=""; clicks::Observable)`
 
-Note the button text supports a special `clicks` variable, e.g.:
+A button. `content` goes inside the button.
+
+Note the button `content` supports a special `clicks` variable, e.g.:
 `button("clicked {{clicks}} times")`
 """
 function button(text=""; clicks::Observable = Observable(0), label="")
@@ -172,13 +174,11 @@ function button(text=""; clicks::Observable = Observable(0), label="")
 end
 
 """
-```
-checkbox(checked=false;
-         label="",
-         ob::Observable = Observable(checked))
-```
+`checkbox(checked::Union{Bool, Observable}=false; label)`
 
-e.g. `checkbox("be my friend?", checked=false)`
+A checkbox.
+
+e.g. `checkbox(label="be my friend?")`
 """
 function checkbox(checked=false; label="")
 
@@ -194,10 +194,7 @@ function checkbox(checked=false; label="")
 end
 
 """
-```
-textbox(label="";
-        ob::Observable = Observable(""))
-```
+`textbox(label=""; text::Union{String, Observable})`
 
 Create a text input area with an optional `label`
 
