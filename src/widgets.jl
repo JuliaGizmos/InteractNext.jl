@@ -18,21 +18,21 @@ observable `ob` when the slider is changed:
 ```
 # slider from Range
 s1 = slider(1:10; label="slide on", value="7")
-slider_obs = obs(s1)
+slider_obs = observe(s1)
 
 # slider from Array
 lyrics = ["When","I","wake","up","yes","I ","know","I'm","gonna","be"]
 s2 = slider(lyrics; label="Proclaim", value="7")
-slider_obs = obs(s2)
+slider_obs = observe(s2)
 
 # slider from Associative
-# The slider will have keys(d) for its labels, while obs(s3) will hold d[selected]
+# The slider will have keys(d) for its labels, while observe(s3) will hold d[selected]
 
 using DataStructures
 lyrics = ["When","I","wake","up","yes","I ","know","I'm","gonna","be"]
 d = OrderedDict(zip(lyrics, 1:length(lyrics))
 s3 = slider(d); label="No true Scotsman", value="7")
-slider_obs = obs(s3)
+slider_obs = observe(s3)
 ```
 
 Slider uses the Vue Slider Component from https://github.com/NightCatSama/vue-slider-component
