@@ -20,7 +20,6 @@ widget for use in @manipulate
 """
 function primary_obs!(w, ob)
     widgobs[w] = ob
-    on(identity, ob)
 end
 primary_obs!(w, ob::String) = primary_obs!(w, w[ob])
 

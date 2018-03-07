@@ -67,6 +67,8 @@ function togglebuttons(options::Associative;
                               :options=>labels_idxs],
                    methods=Dict("select_fn"=>select_fn,
                                 "is_selected"=>is_selected))
+    toglbtns["selected"] = selected
+    @private toglbtns["value"] = ob2
     primary_obs!(toglbtns, ob2)
     slap_material_design!(toglbtns)
 end
