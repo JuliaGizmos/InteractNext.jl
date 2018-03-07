@@ -4,10 +4,14 @@ using Vue
 
 import WebIO: camel2kebab
 
+export observe, signal
+
+Base.@deprecate signal(x) observe(x)
+
 # store mapping from widgets to observables
 widgobs = Dict{Any, Observable}()
 # users access a widget's Observable via this function
-obs(widget) = widgobs[widget]
+observe(widget) = widgobs[widget]
 
 """
 sets up a primary observable for every

@@ -2,12 +2,12 @@ using InteractNext
 
 s1 = slider(1:20)
 #---
-sobs = obs(s1)
+sobs = observe(s1)
 display.([s1, sobs]);
 #---
 button1 = button("button one {{clicks}}")
 #---
-num_clicks = obs(button1)
+num_clicks = observe(button1)
 button2 = button("button two {{clicks}}", num_clicks)
 #---
 display.([button1, button2, num_clicks |> WebIO.render]);

@@ -19,8 +19,8 @@ function map_block(block, symbols)
     f = gensym()
     quote
         $f = $lambda
-        ob = Observable{Any}($f($(map(s->:(obs($s)[]), symbols)...)))
-        map!($f, ob, $(map(s->:(obs($s)), symbols)...))
+        ob = Observable{Any}($f($(map(s->:(observe($s)[]), symbols)...)))
+        map!($f, ob, $(map(s->:(observe($s)), symbols)...))
         ob
     end
 end
