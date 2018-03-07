@@ -4,9 +4,10 @@ using Vue
 
 import WebIO: camel2kebab
 
-export observe, signal
+export obs, observe, signal
 
 Base.@deprecate signal(x) observe(x)
+Base.@deprecate obs(x) observe(x)
 
 # store mapping from widgets to observables
 widgobs = Dict{Any, Observable}()
