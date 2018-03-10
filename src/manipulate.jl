@@ -9,17 +9,13 @@ function make_widget(binding)
          Expr(:call, widget, esc(expr), string(sym)))
 end
 
-function display_widgets(widgetvars)
-    map(v -> Expr(:call, esc(:display), esc(v)), widgetvars)
-end
-
 function map_block(block, symbols)
     lambda = Expr(:(->), Expr(:tuple, symbols...),
                   block)
     f = gensym()
     quote
         $f = $lambda
-        ob = Observable{Any}($f($(map(s->:(observe($s)[]), symbols)...)))
+        ob = Observables.Observable{Any}($f($(map(s->:(observe($s)[]), symbols)...)))
         map!($f, ob, $(map(s->:(observe($s)), symbols)...))
         ob
     end
@@ -44,7 +40,7 @@ macro manipulate(expr)
 
     widgets = map(make_widget, bindings)
     quote
-        dom"div"($(widgets...), WebIO.render($(esc(map_block(block, syms)))))
+        dom"div"($(widgets...), $(esc(map_block(block, syms))))
     end
 end
 
