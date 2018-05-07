@@ -1,10 +1,11 @@
-export slider, vslider, button, checkbox, textbox
+export slider, vslider, button, checkbox, textbox, filedialog
 
 using DataStructures, JSON
 
 include("widget_utils.jl")
 include("options_widgets.jl")
 include("output_widgets.jl")
+include("filedialog.jl")
 
 """
 ```
