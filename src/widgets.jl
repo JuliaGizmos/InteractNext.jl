@@ -149,6 +149,7 @@ function slap_material_design!(w::Scope)
                "vue-material/js-dist/dist/vue-material.js")
     import!(w, "https://gitcdn.xyz/cdn/JobJob/" *
                "vue-material/css-dist/dist/vue-material.css")
+    import!(w, "https://fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons")
     onimport(w, @js function (Vue, VueMaterial)
         Vue.use(VueMaterial)
     end)
