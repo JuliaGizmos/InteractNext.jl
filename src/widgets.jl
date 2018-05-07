@@ -1,4 +1,4 @@
-export slider, vslider, button, checkbox, textbox, filedialog
+export slider, vslider, button, checkbox, textbox, choosefile
 
 using DataStructures, JSON
 

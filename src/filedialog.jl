@@ -1,4 +1,12 @@
-function filedialog(label=""; placeholder="", multiselect=false, accept="*")
+"""
+`choosefile(label=""; placeholder="", multiselect=false, accept="*")`
+
+Create a widget to select files.
+
+If `multiselect=true` the observable will hold an array containing the paths of all
+selected files. Use `accept` to only accept some formats, e.g. `accept=".csv"`
+"""
+function choosefile(label=""; placeholder="", multiselect=false, accept="*")
 
     if multiselect
         onFileUpload = js"""function (event){
