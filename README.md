@@ -115,10 +115,7 @@ and when you click on a button, or move the slider, the plot should update.
 
 #### IJulia
 ```julia
-display.((mp,p));
-# or
-p.displayed = true # needed until PlotlyJS.jl is better integrated with WebIO.jl
-display(ui);
+display.((mp,p)); # needed until PlotlyJS.jl is better integrated with WebIO.jl
 ```
 
 #### Blink (from the REPL)
