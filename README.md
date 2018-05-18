@@ -12,24 +12,10 @@ This package is new, but should be "working" to a greater or lesser extent in al
 
 ### Install
 
-Currently InteractNext is not in metadata, and neither are a few packages it is built on, so for now installation is:
+Currently InteractNext is not in metadata, so for now installation is:
 ```
-Pkg.clone("https://github.com/JuliaGizmos/WebIO.jl")
-Pkg.checkout("Observables")
-Pkg.clone("https://github.com/JuliaGizmos/Vue.jl")
-Pkg.clone("https://github.com/JuliaGizmos/CSSUtil.jl")
 Pkg.clone("https://github.com/JuliaGizmos/InteractNext.jl")
 ```
-If you have those packages already, you'll want to ensure they're on master too, since they're under development atm, so `Pkg.update()` to ensure you're up to date.
-
-Until a proper WebIO release is made, we will need to run a couple of further steps. Firstly [node.js](https://nodejs.org/en/) will need to be installed. And then, run these at a Julia prompt:
-```
-using WebIO
-WebIO.devsetup()
-WebIO.bundlejs(watch=false)
-```
-
-N.b. the above are just a one-off requirement to install WebIO's javascript files. See [WebIO](https://github.com/JuliaGizmos/WebIO.jl) for more details.
 
 ### Examples
 
@@ -37,7 +23,7 @@ The following code is common to the examples below. It creates some svg circle e
 whose centres are sampled from a sine wave.
 
 ```julia
-using InteractNext
+using InteractNext, WebIO
 
 width, height = 700, 300
 colors = ["black", "gray", "silver", "maroon", "red", "olive", "yellow", "green", "lime", "teal", "aqua", "navy", "blue", "purple", "fuchsia"]

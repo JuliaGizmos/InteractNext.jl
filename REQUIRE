@@ -1,7 +1,8 @@
-WebIO 0.1.4
-Observables
+WebIO 0.1.9
+Observables 0.1
 Requires
 DataStructures
 JSON
-Vue
-JSExpr
+Vue 0.1
+JSExpr 0.1.1
+CSSUtil 0.0.1
