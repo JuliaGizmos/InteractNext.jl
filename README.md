@@ -1,10 +1,6 @@
 # InteractNext
 
-InteractNext is a lot like [Interact.jl](https://github.com/JuliaGizmos/Interact.jl), except that as well as running in IJulia, it also works in the [Atom/Juno IDE](https://github.com/JunoLab/Juno.jl), in a desktop window with [Blink.jl](https://github.com/JunoLab/Blink.jl), and served in a webpage via [Mux.jl](https://github.com/JuliaWeb/Mux.jl).
-
-Over time InteractNext should hopefully support anywhere Julia can be used to show html/css/js, and feature more widgets than Interact supported, enabling the creation of more detailed and flexible UIs from within Julia.
-
-(The other main difference from Interact.jl is that InteractNext uses [Observables](https://github.com/JuliaGizmos/Observables.jl) instead of Reactive.jl Signals, so you use `obs(w)` instead of `signal(w)` to get the Observable of widget `w`)
+This package has now been rewritten and its ideas are inside Interact.jl. Use [Interact.jl](https://juliagizmos.github.io/Interact.jl/latest/) instead!
 
 ### Development Status
 
